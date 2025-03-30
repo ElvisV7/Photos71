@@ -1,53 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.TitledPane?>
-<TitledPane animated="false" prefHeight="400.0" prefWidth="600.0" text="Log In"
-            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1"
-            fx:controller="view.LoginController">
-   <content>
-      <GridPane alignment="CENTER" hgap="10" vgap="10" prefHeight="312.0" prefWidth="598.0">
-         <columnConstraints>
-            <ColumnConstraints minWidth="10.0" prefWidth="100.0" />
-            <ColumnConstraints minWidth="10.0" prefWidth="400.0" />
-         </columnConstraints>
-         <rowConstraints>
-            <!-- Row for the username label and input (error message on top of the TextField) -->
-            <RowConstraints minHeight="10.0" prefHeight="70.0" />
-            <!-- Row for the buttons -->
-            <RowConstraints minHeight="10.0" prefHeight="50.0" />
-         </rowConstraints>
-         <children>
-            <!-- Username label in column 0, row 0 -->
-            <Label text="Username:" GridPane.columnIndex="0" GridPane.rowIndex="0"
-                   alignment="CENTER_RIGHT" />
-            <!-- VBox in column 1, row 0 for error label and TextField -->
-            <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
-               <children>
-                  <Label fx:id="errorLabel" text="" style="-fx-text-fill: red;"/>
-                  <TextField fx:id="username" prefHeight="38.0" prefWidth="226.0"/>
-               </children>
-            </VBox>
-            <!-- HBox in column 1, row 1 for buttons -->
-            <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
-               <children>
-                  <Button fx:id="loginButton" mnemonicParsing="false" onAction="#handleSubmitAction"
-                          prefHeight="27.0" prefWidth="141.0" style="-fx-background-color: #ABFCFA;"
-                          text="Log In"/>
-                  <Button fx:id="signupButton" mnemonicParsing="false" onAction="#handleSignUp"
-                          prefHeight="27.0" prefWidth="141.0" style="-fx-background-color: #ABFCFA;"
-                          text="Sign Up"/>
-               </children>
-            </HBox>
-         </children>
-      </GridPane>
-   </content>
-</TitledPane>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<StackPane xmlns:fx="http://javafx.com/fxml/1" 
+           xmlns="http://javafx.com/javafx/23.0.1" 
+           fx:controller="view.LoginController"
+           stylesheets="@application.css">
+    <TitledPane animated="false" prefHeight="400.0" prefWidth="600.0" text="Log In">
+        <content>
+            <GridPane alignment="CENTER" hgap="10" vgap="10" prefHeight="312.0" prefWidth="598.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="10.0" prefWidth="100.0" />
+                    <ColumnConstraints minWidth="10.0" prefWidth="400.0" />
+                </columnConstraints>
+                <rowConstraints>
+                    <!-- Row for the username label and input (error message on top of the TextField) -->
+                    <RowConstraints minHeight="10.0" prefHeight="70.0" />
+                    <!-- Row for the buttons -->
+                    <RowConstraints minHeight="10.0" prefHeight="50.0" />
+                </rowConstraints>
+                <children>
+                    <!-- Username label in column 0, row 0 -->
+                    <Label text="Username:" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                           alignment="CENTER_RIGHT" />
+                    <!-- VBox in column 1, row 0 for error label and TextField -->
+                    <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <children>
+                            <Label fx:id="errorLabel" text="" style="-fx-text-fill: red;"/>
+                            <TextField fx:id="username" prefHeight="38.0" prefWidth="226.0"/>
+                        </children>
+                    </VBox>
+                    <!-- HBox in column 1, row 1 for buttons -->
+                    <HBox spacing="10" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <children>
+                            <Button fx:id="loginButton" mnemonicParsing="false" onAction="#handleSubmitAction"
+                                    prefHeight="27.0" prefWidth="141.0" style="-fx-background-color: #ABFCFA;"
+                                    text="Log In"/>
+                            <Button fx:id="signupButton" mnemonicParsing="false" onAction="#handleSignUp"
+                                    prefHeight="27.0" prefWidth="141.0" style="-fx-background-color: #ABFCFA;"
+                                    text="Sign Up"/>
+                        </children>
+                    </HBox>
+                </children>
+            </GridPane>
+        </content>
+    </TitledPane>
+</StackPane>

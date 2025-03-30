@@ -1,1 +1,10 @@
-/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+/* This rule targets the title region (header) of all TitledPanes */
+.titled-pane > .title {
+    -fx-background-color: #4df373;
+}
+.root {
+    -fx-background-image: url("/view/background.jpeg");
+    -fx-background-size: cover;          /* Scales the image to cover the entire area */
+    -fx-background-position: center;      /* Centers the image */
+    -fx-background-repeat: no-repeat;     /* No tiling */
+}

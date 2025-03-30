@@ -13,8 +13,10 @@ public class Photos extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/view/login.fxml"));
         primaryStage.setTitle("Photos");
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
-        primaryStage.setScene(new Scene(root, 600, 400));
+        Scene scene = new Scene(root, 600, 400);
+        scene.getStylesheets().add(getClass().getResource("/view/application.css").toExternalForm());
         primaryStage.setResizable(false); // Disable window resizing
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 

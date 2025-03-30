@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -49,13 +50,15 @@ public class LoginController {
     
     @FXML
     void handleSignUp(ActionEvent event) {
-        // Create a TextInputDialog with an empty default value.
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Sign Up");
         dialog.setHeaderText("Create a New Account");
         dialog.setContentText("Please enter a new username:");
 
-        // Show the dialog and wait for the user input.
+        // Retrieve the Stage for the dialog and set an icon image.
+        Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             String newUser = result.get().trim();
@@ -70,5 +73,4 @@ public class LoginController {
             }
         }
     }
-
 }
