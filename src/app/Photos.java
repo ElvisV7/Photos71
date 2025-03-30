@@ -10,7 +10,7 @@ import javafx.stage.Stage;
 public class Photos extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/views/login.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/view/login.fxml"));
         primaryStage.setTitle("Photos");
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
         primaryStage.setScene(new Scene(root, 600, 400));

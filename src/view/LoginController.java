@@ -1,4 +1,4 @@
-package views;
+package view;
 
 import java.io.IOException;
 import java.util.*;
@@ -30,7 +30,7 @@ public class LoginController {
     	String user = username.getText();
     	if(users.contains(user)) {
     		System.out.println(user + " logged in!");
-    		Parent newRoot = FXMLLoader.load(getClass().getResource("/views/home.fxml"));
+    		Parent newRoot = FXMLLoader.load(getClass().getResource("/view/home.fxml"));
 	        Scene newScene = new Scene(newRoot, 600, 400);
 	        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 	        currentStage.setScene(newScene);
@@ -48,7 +48,7 @@ public class LoginController {
         System.out.println("Album clicked: " + albumName);
 
         // Load the album view (albumView.fxml)
-        Parent albumView = FXMLLoader.load(getClass().getResource("/views/albumView.fxml"));
+        Parent albumView = FXMLLoader.load(getClass().getResource("/view/albumView.fxml"));
         Scene scene = new Scene(albumView);
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(scene);
