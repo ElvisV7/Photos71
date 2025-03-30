@@ -49,7 +49,7 @@ public class LoginController {
 
         // Load the album view (albumView.fxml)
         Parent albumView = FXMLLoader.load(getClass().getResource("/view/albumView.fxml"));
-        Scene scene = new Scene(albumView);
+        Scene scene = new Scene(albumView, 600, 400);
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(scene);
         stage.show();
