@@ -21,22 +21,28 @@ public class LoginController {
     private Button loginButton;
     
     @FXML
-    private Button signupButton; // Not strictly required but can be injected if needed
-
+    private Button signupButton;
+    
     @FXML
     private TextField username;
     
     @FXML
     private Label errorLabel;
-
-    private static ArrayList<String> users = new ArrayList<String>(Arrays.asList("admin"));
-
+    
+    // Hold users in memory (the Admin user is added by default)
+    private static ArrayList<User> users = new ArrayList<>(Arrays.asList(Admin.getInstance()));
+    
     @FXML
     void handleSubmitAction(ActionEvent event) throws IOException {
-        String user = username.getText().trim();
-        if (users.contains(user)) {
+        String uname = username.getText().trim();
+        User temp = new User(uname);
+        int index = users.indexOf(temp);
+        if (index != -1) {
+            User user = users.get(index);
+            // Set the current user for album display.
+            AlbumController.currentUser = user;
             errorLabel.setText("");
-            System.out.println(user + " logged in!");
+            System.out.println(user.getUsername() + " logged in!");
             Parent newRoot = FXMLLoader.load(getClass().getResource("/view/home.fxml"));
             Scene newScene = new Scene(newRoot, 600, 400);
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -47,6 +53,7 @@ public class LoginController {
             errorLabel.setText("Invalid username");
         }
     }
+
     
     @FXML
     void handleSignUp(ActionEvent event) {
@@ -54,20 +61,20 @@ public class LoginController {
         dialog.setTitle("Sign Up");
         dialog.setHeaderText("Create a New Account");
         dialog.setContentText("Please enter a new username:");
-
+        
         // Retrieve the Stage for the dialog and set an icon image.
         Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
         dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
-
+        
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             String newUser = result.get().trim();
             if (newUser.isEmpty()) {
                 errorLabel.setText("Username cannot be empty");
-            } else if (users.contains(newUser)) {
+            } else if (users.contains(new User(newUser))) {
                 errorLabel.setText("Username already exists");
             } else {
-                users.add(newUser);
+                users.add(new User(newUser));
                 errorLabel.setText("User created! Please log in.");
                 System.out.println("New user created: " + newUser);
             }

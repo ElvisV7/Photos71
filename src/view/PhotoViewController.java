@@ -1,5 +1,6 @@
 package view;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -22,41 +23,89 @@ import javafx.stage.Stage;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 
-import java.io.File;
-
 public class PhotoViewController implements Initializable {
 
     @FXML
     private TilePane photoTilePane;
 
+    // This field will hold the current album instance passed from the albums page.
+    private Album album;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initially, the album may be empty.
-        // If you have existing photos to load, do so here.
-        // For demonstration, suppose you already have some photos:
-        String[] photoPaths = {"/app/icon.png","/view/folder_icon.png"};
-        for (String path : photoPaths) {
-            addPhoto(path);
+        // No demo photos loaded here.
+        // The album will be set later via setAlbum(), which will update the display.
+    }
+    
+    // This method is called by the previous controller when an album is opened.
+    public void setAlbum(Album album) {
+        this.album = album;
+        updatePhotoDisplay();
+    }
+    
+    // Update the TilePane by clearing it and adding each photo from the album.
+    private void updatePhotoDisplay() {
+        photoTilePane.getChildren().clear();
+        if(album != null) {
+            for(Photo photo : album.getPhotos()) {
+                addPhotoToTile(photo);
+            }
         }
     }
     
-    // Method to add a photo icon from a resource path
-    private void addPhoto(String path) {
-        Image photo = new Image(getClass().getResourceAsStream(path));
-        ImageView photoIcon = new ImageView(photo);
-        photoIcon.setFitWidth(150);  // medium-sized icon width
-        photoIcon.setFitHeight(150); // medium-sized icon height
+    // Create a visual container for the photo and add it to the tile pane.
+    private void addPhotoToTile(Photo photo) {
+        Image image = new Image(getImageInputStream(photo.getPath()));
+        ImageView photoIcon = new ImageView(image);
+        photoIcon.setFitWidth(150);
+        photoIcon.setFitHeight(150);
         photoIcon.setPreserveRatio(true);
         
-        // Make the photo clickable:
+        // Make the photo clickable to open in a larger view.
         photoIcon.setOnMouseClicked((MouseEvent event) -> {
-            openPhoto(photo, event);
+            openPhoto(image, event);
         });
         
-        photoTilePane.getChildren().add(photoIcon);
+        // Create a container (VBox) with the ImageView and a label for the file name.
+        VBox photoContainer = new VBox();
+        photoContainer.setAlignment(Pos.CENTER);
+        photoContainer.setSpacing(5);
+        
+        // Derive file name from the photo's path.
+        String fileName = new File(photo.getPath()).getName();
+        Label photoLabel = new Label(fileName);
+        
+        photoContainer.getChildren().addAll(photoIcon, photoLabel);
+        photoTilePane.getChildren().add(photoContainer);
     }
     
-    // Handler for uploading new photos (existing code)
+    private FileInputStream getImageInputStream(String path) {
+        try {
+            // If the path starts with "/", assume it's a resource path bundled with the app.
+            if (path.startsWith("/")) {
+                java.net.URL resourceUrl = getClass().getResource(path);
+                if (resourceUrl != null) {
+                    return new FileInputStream(new File(resourceUrl.toURI()));
+                } else {
+                    throw new RuntimeException("Resource not found: " + path);
+                }
+            } else {
+                // Otherwise, assume it's an absolute file system path.
+                File file = new File(path);
+                if (file.exists()) {
+                    return new FileInputStream(file);
+                } else {
+                    throw new RuntimeException("File not found: " + path);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    
+    // Handler for uploading new photos.
     @FXML
     private void handleUploadPhoto(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -66,54 +115,36 @@ public class PhotoViewController implements Initializable {
         );
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         List<File> files = fileChooser.showOpenMultipleDialog(stage);
-        if (files != null && !files.isEmpty()) {
+        if (files != null && !files.isEmpty() && album != null) {
             for (File file : files) {
                 try {
-                    Image photo = new Image(new FileInputStream(file));
-                    ImageView photoIcon = new ImageView(photo);
-                    photoIcon.setFitWidth(150);   // medium-sized icon width
-                    photoIcon.setFitHeight(150);  // medium-sized icon height
-                    photoIcon.setPreserveRatio(true);
-                    
-                    // Make the photo clickable to open in a larger view.
-                    photoIcon.setOnMouseClicked((MouseEvent e) -> {
-                        openPhoto(photo, e);
-                    });
-                    
-                    // Create a VBox to hold the ImageView and a Label with the file name.
-                    VBox photoContainer = new VBox();
-                    photoContainer.setAlignment(Pos.CENTER);
-                    photoContainer.setSpacing(5); // optional spacing between image and label
-                    
-                    Label photoLabel = new Label(file.getName());
-                    
-                    photoContainer.getChildren().addAll(photoIcon, photoLabel);
-                    
-                    photoTilePane.getChildren().add(photoContainer);
-                } catch (IOException e) {
+                    // Create a new Photo with the file's absolute path.
+                    Photo newPhoto = new Photo(file.getAbsolutePath());
+                    // Add the photo to the album.
+                    album.addPhoto(newPhoto);
+                    // Add the photo icon to the display.
+                    addPhotoToTile(newPhoto);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
     }
-
-
     
-    // Method to open a clicked photo in a larger view
+    // Open a clicked photo in a larger view.
     private void openPhoto(Image photo, MouseEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/photoDetail.fxml"));
-            // Load the enlarged photo view layout
-            Node detailRoot = loader.load();
+            Parent detailRoot = loader.load();
             PhotoDetailController detailController = loader.getController();
             detailController.setImage(photo);
             
-            // Get the current scene so we can return to it later.
+            // Save the current scene so we can return to it later.
             Scene currentScene = photoTilePane.getScene();
             detailController.setPreviousScene(currentScene);
             
-            // Create a new scene with the same dimensions as the current one.
-            Scene detailScene = new Scene((javafx.scene.Parent) detailRoot, 900, 600);
+            // Create a new scene for the detail view with fixed dimensions.
+            Scene detailScene = new Scene(detailRoot, 900, 600);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(detailScene);
         } catch (IOException ex) {
@@ -124,10 +155,9 @@ public class PhotoViewController implements Initializable {
     @FXML
     private void handleBack(ActionEvent event) throws IOException {
         Parent albumView = FXMLLoader.load(getClass().getResource("/view/home.fxml"));
-        Scene albumScene = new Scene(albumView, 600, 400); // Use the original album view dimensions
+        Scene albumScene = new Scene(albumView, 600, 400);
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(albumScene);
         stage.show();
     }
-
 }
