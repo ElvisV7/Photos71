@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.TilePane?>
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="view.PhotoViewController">
     <top>
-        <Button text="Upload Photo" onAction="#handleUploadPhoto" BorderPane.alignment="CENTER"/>
+        <Button fx:id="uploadPhotoButton" text="Upload Photo" onAction="#handleUploadPhoto" BorderPane.alignment="CENTER"/>
     </top>
     <center>
         <ScrollPane fitToWidth="true">

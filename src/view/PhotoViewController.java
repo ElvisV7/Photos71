@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -31,16 +32,24 @@ public class PhotoViewController implements Initializable {
     // This field will hold the current album instance passed from the albums page.
     private Album album;
 
+    @FXML
+    private Button uploadPhotoButton;
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // No demo photos loaded here.
         // The album will be set later via setAlbum(), which will update the display.
     }
-    
-    // This method is called by the previous controller when an album is opened.
+
     public void setAlbum(Album album) {
         this.album = album;
         updatePhotoDisplay();
+        // Hide the upload button if this is the default "Stock Images" album.
+        if ("Stock Images".equals(album.getName())) {
+            uploadPhotoButton.setVisible(false);
+        } else {
+            uploadPhotoButton.setVisible(true);
+        }
     }
     
     // Update the TilePane by clearing it and adding each photo from the album.
@@ -105,9 +114,14 @@ public class PhotoViewController implements Initializable {
     }
 
     
-    // Handler for uploading new photos.
     @FXML
     private void handleUploadPhoto(ActionEvent event) {
+        if (album != null && "Stock Images".equals(album.getName())) {
+            System.out.println("Cannot upload photos to the Stock Images album.");
+            // Optionally, display an alert to the user.
+            return;
+        }
+        
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Photo(s) to Upload");
         fileChooser.getExtensionFilters().addAll(
@@ -130,6 +144,7 @@ public class PhotoViewController implements Initializable {
             }
         }
     }
+
     
     // Open a clicked photo in a larger view.
     private void openPhoto(Image photo, MouseEvent event) {

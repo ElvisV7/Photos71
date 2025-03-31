@@ -5,6 +5,7 @@ import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
@@ -34,8 +35,7 @@ public class AlbumController {
                     .anyMatch(a -> a.getName().equals("Stock Images"));
             if (!defaultExists) {
                 Album defaultAlbum = new Album("Stock Images");
-                // Optionally add preloaded stock photos:
-                // defaultAlbum.addPhoto(new Photo("path/to/stock/photo1.jpg"));
+                // Optionally add preloaded stock photos here.
                 currentUser.getAlbums().add(defaultAlbum);
             }
             populateAlbums();
@@ -50,7 +50,6 @@ public class AlbumController {
         }
     }
     
-    // Create a visual folder box for the given album.
     private VBox createAlbumBox(Album album) {
         VBox box = new VBox();
         box.setSpacing(5);
@@ -65,19 +64,43 @@ public class AlbumController {
         
         Label nameLabel = new Label(album.getName());
         
+        // Add the folder icon and album name to the box.
         box.getChildren().addAll(folderIcon, nameLabel);
         
-        // When this folder is clicked, open the album.
-        box.setOnMouseClicked((MouseEvent event) -> {
-            try {
-                openAlbum(album, event);
-            } catch (IOException e) {
-                e.printStackTrace();
+        // Only add a "Remove" button if the album is not the default "Stock Images" album.
+        if (!"Stock Images".equals(album.getName())) {
+            Button removeButton = new Button("Remove");
+            removeButton.setOnAction(e -> removeAlbum(album));
+            box.getChildren().add(removeButton);
+        }
+        
+        // Set click handler to open the album.
+        box.setOnMouseClicked(event -> {
+            // If the click target is not the remove button, open the album.
+            if (!(event.getTarget() instanceof Button)) {
+                try {
+                    openAlbum(album, event);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
         
         return box;
     }
+
+    
+ // Remove the specified album from the current user and refresh the display.
+    private void removeAlbum(Album album) {
+        if ("Stock Images".equals(album.getName())) {
+            System.out.println("Cannot remove the default 'Stock Images' album.");
+            // Optionally, you could display an alert to the user here.
+            return;
+        }
+        currentUser.getAlbums().remove(album);
+        populateAlbums();
+    }
+
     
     // Open the specified album by passing it to the PhotoViewController.
     private void openAlbum(Album album, MouseEvent event) throws IOException {
