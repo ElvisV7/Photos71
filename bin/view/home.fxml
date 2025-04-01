@@ -5,7 +5,8 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="view.AlbumController">
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21.0.6"
+            fx:controller="view.AlbumController">
     <center>
         <!-- The FlowPane will be populated dynamically by the controller with the user's albums -->
         <FlowPane fx:id="albumFlowPane" hgap="10" vgap="10">

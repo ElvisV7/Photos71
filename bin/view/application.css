@@ -1,10 +1,17 @@
-/* This rule targets the title region (header) of all TitledPanes */
+/* Header (title) of the TitledPane */
 .titled-pane > .title {
-    -fx-background-color: #4df373;
+    -fx-background-color: rgba(77, 243, 115, 0.75);  /* Green with 75% opacity */
 }
+
+/* Content area of the TitledPane */
+.titled-pane > .content {
+    -fx-background-color: rgba(255, 255, 255, 0.85); /* White with 85% opacity */
+}
+
+/* Root background as before */
 .root {
     -fx-background-image: url("/view/background.jpeg");
-    -fx-background-size: cover;          /* Scales the image to cover the entire area */
-    -fx-background-position: center;      /* Centers the image */
-    -fx-background-repeat: no-repeat;     /* No tiling */
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
 }

@@ -1,5 +1,7 @@
 package app;
 
+import java.util.ArrayList;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -8,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class Photos extends Application {
+	public static view.Admin admin = view.Admin.getInstance(new ArrayList<view.User>()); // Global access to admin
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/view/login.fxml"));

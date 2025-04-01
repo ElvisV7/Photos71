@@ -28,23 +28,23 @@ public class PhotoViewController implements Initializable {
 
     @FXML
     private TilePane photoTilePane;
-
-    // This field will hold the current album instance passed from the albums page.
-    private Album album;
-
+    
+    // Inject the upload button
     @FXML
     private Button uploadPhotoButton;
     
+    private Album album;
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // No demo photos loaded here.
-        // The album will be set later via setAlbum(), which will update the display.
+        // You may populate your TilePane here or later via setAlbum.
     }
-
+    
     public void setAlbum(Album album) {
         this.album = album;
         updatePhotoDisplay();
-        // Hide the upload button if this is the default "Stock Images" album.
+        
+        // Hide the upload button if this is the "Stock Images" album.
         if ("Stock Images".equals(album.getName())) {
             uploadPhotoButton.setVisible(false);
         } else {
@@ -52,55 +52,47 @@ public class PhotoViewController implements Initializable {
         }
     }
     
-    // Update the TilePane by clearing it and adding each photo from the album.
     private void updatePhotoDisplay() {
         photoTilePane.getChildren().clear();
-        if(album != null) {
-            for(Photo photo : album.getPhotos()) {
+        if (album != null) {
+            for (Photo photo : album.getPhotos()) {
                 addPhotoToTile(photo);
             }
         }
     }
     
-    // Create a visual container for the photo and add it to the tile pane.
     private void addPhotoToTile(Photo photo) {
+        // Load image and create an ImageView, etc.
         Image image = new Image(getImageInputStream(photo.getPath()));
         ImageView photoIcon = new ImageView(image);
         photoIcon.setFitWidth(150);
         photoIcon.setFitHeight(150);
         photoIcon.setPreserveRatio(true);
         
-        // Make the photo clickable to open in a larger view.
         photoIcon.setOnMouseClicked((MouseEvent event) -> {
             openPhoto(image, event);
         });
         
-        // Create a container (VBox) with the ImageView and a label for the file name.
-        VBox photoContainer = new VBox();
-        photoContainer.setAlignment(Pos.CENTER);
-        photoContainer.setSpacing(5);
-        
-        // Derive file name from the photo's path.
-        String fileName = new File(photo.getPath()).getName();
-        Label photoLabel = new Label(fileName);
-        
-        photoContainer.getChildren().addAll(photoIcon, photoLabel);
-        photoTilePane.getChildren().add(photoContainer);
+        VBox container = new VBox();
+        container.setAlignment(Pos.CENTER);
+        container.setSpacing(5);
+        Label nameLabel = new Label(new java.io.File(photo.getPath()).getName());
+        container.getChildren().addAll(photoIcon, nameLabel);
+        photoTilePane.getChildren().add(container);
     }
     
     private FileInputStream getImageInputStream(String path) {
+        // Implementation that distinguishes resource vs. file paths.
         try {
-            // If the path starts with "/", assume it's a resource path bundled with the app.
             if (path.startsWith("/")) {
-                java.net.URL resourceUrl = getClass().getResource(path);
+                URL resourceUrl = getClass().getResource(path);
                 if (resourceUrl != null) {
-                    return new FileInputStream(new File(resourceUrl.toURI()));
+                    return new FileInputStream(new java.io.File(resourceUrl.toURI()));
                 } else {
                     throw new RuntimeException("Resource not found: " + path);
                 }
             } else {
-                // Otherwise, assume it's an absolute file system path.
-                File file = new File(path);
+                java.io.File file = new java.io.File(path);
                 if (file.exists()) {
                     return new FileInputStream(file);
                 } else {
@@ -112,13 +104,13 @@ public class PhotoViewController implements Initializable {
             return null;
         }
     }
-
     
     @FXML
     private void handleUploadPhoto(ActionEvent event) {
+        // Although the upload button should be hidden for "Stock Images",
+        // we add an extra check here.
         if (album != null && "Stock Images".equals(album.getName())) {
-            System.out.println("Cannot upload photos to the Stock Images album.");
-            // Optionally, display an alert to the user.
+            System.out.println("Upload not allowed for Stock Images album.");
             return;
         }
         
@@ -129,41 +121,20 @@ public class PhotoViewController implements Initializable {
         );
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         List<File> files = fileChooser.showOpenMultipleDialog(stage);
+        
         if (files != null && !files.isEmpty() && album != null) {
             for (File file : files) {
                 try {
-                    // Create a new Photo with the file's absolute path.
+                    // Create a new Photo using the absolute file path.
                     Photo newPhoto = new Photo(file.getAbsolutePath());
                     // Add the photo to the album.
                     album.addPhoto(newPhoto);
-                    // Add the photo icon to the display.
+                    // Update the display by adding the new photo.
                     addPhotoToTile(newPhoto);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    
-    // Open a clicked photo in a larger view.
-    private void openPhoto(Image photo, MouseEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/photoDetail.fxml"));
-            Parent detailRoot = loader.load();
-            PhotoDetailController detailController = loader.getController();
-            detailController.setImage(photo);
-            
-            // Save the current scene so we can return to it later.
-            Scene currentScene = photoTilePane.getScene();
-            detailController.setPreviousScene(currentScene);
-            
-            // Create a new scene for the detail view with fixed dimensions.
-            Scene detailScene = new Scene(detailRoot, 900, 600);
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(detailScene);
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
     
@@ -174,5 +145,21 @@ public class PhotoViewController implements Initializable {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(albumScene);
         stage.show();
+    }
+    
+    private void openPhoto(Image photo, MouseEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/photoDetail.fxml"));
+            Parent detailRoot = loader.load();
+            PhotoDetailController detailController = loader.getController();
+            detailController.setImage(photo);
+            Scene currentScene = photoTilePane.getScene();
+            detailController.setPreviousScene(currentScene);
+            Scene detailScene = new Scene(detailRoot, 900, 600);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(detailScene);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }

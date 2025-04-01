@@ -3,11 +3,15 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.TilePane?>
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="view.PhotoViewController">
+<?import javafx.scene.layout.StackPane?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21.0.6"
+            fx:controller="view.PhotoViewController">
     <top>
-        <Button fx:id="uploadPhotoButton" text="Upload Photo" onAction="#handleUploadPhoto" BorderPane.alignment="CENTER"/>
+        <StackPane alignment="CENTER">
+            <Button fx:id="uploadPhotoButton" text="Upload Photo" onAction="#handleUploadPhoto"/>
+        </StackPane>
     </top>
     <center>
         <ScrollPane fitToWidth="true">
@@ -21,13 +25,6 @@
         </ScrollPane>
     </center>
     <bottom>
-        <HBox alignment="BOTTOM_RIGHT" spacing="10">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
-            <children>
-                <Button text="Back" onAction="#handleBack"/>
-            </children>
-        </HBox>
+        <Button text="Back" onAction="#handleBack"/>
     </bottom>
 </BorderPane>

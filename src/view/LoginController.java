@@ -30,11 +30,23 @@ public class LoginController {
     private Label errorLabel;
     
     // Hold users in memory (the Admin user is added by default)
-    private static ArrayList<User> users = new ArrayList<>(Arrays.asList(Admin.getInstance()));
+    private static ArrayList<User> users = app.Photos.admin.listUsers();
     
     @FXML
     void handleSubmitAction(ActionEvent event) throws IOException {
         String uname = username.getText().trim();
+        // Check if admin
+        if ("admin".equals(uname)) {
+            System.out.println(app.Photos.admin.getUsername() + " logged in!");
+            Parent newRoot = FXMLLoader.load(getClass().getResource("/view/adminSubSystem.fxml"));
+            Scene newScene = new Scene(newRoot, 600, 400);
+            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            currentStage.setScene(newScene);
+            currentStage.setResizable(true);
+            currentStage.show();
+            return;
+        }
+        
         User temp = new User(uname);
         int index = users.indexOf(temp);
         if (index != -1) {
@@ -53,7 +65,6 @@ public class LoginController {
             errorLabel.setText("Invalid username");
         }
     }
-
     
     @FXML
     void handleSignUp(ActionEvent event) {
@@ -62,7 +73,6 @@ public class LoginController {
         dialog.setHeaderText("Create a New Account");
         dialog.setContentText("Please enter a new username:");
         
-        // Retrieve the Stage for the dialog and set an icon image.
         Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
         dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
         
@@ -71,13 +81,17 @@ public class LoginController {
             String newUser = result.get().trim();
             if (newUser.isEmpty()) {
                 errorLabel.setText("Username cannot be empty");
-            } else if (users.contains(new User(newUser))) {
-                errorLabel.setText("Username already exists");
             } else {
-                users.add(new User(newUser));
-                errorLabel.setText("User created! Please log in.");
-                System.out.println("New user created: " + newUser);
+                ArrayList<User> users = app.Photos.admin.listUsers();
+                if (users.contains(new User(newUser))) {
+                    errorLabel.setText("Username already exists");
+                } else {
+                    app.Photos.admin.addUser(newUser);
+                    errorLabel.setText("User created! Please log in.");
+                    System.out.println("New user created: " + newUser);
+                }
             }
         }
     }
+
 }
