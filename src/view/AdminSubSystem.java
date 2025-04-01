@@ -18,6 +18,8 @@ import javafx.scene.control.Label;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 
 public class AdminSubSystem {
 
@@ -73,23 +75,67 @@ public class AdminSubSystem {
         
         return box;
     }
-    
+
     @FXML
     private void handleCreateUserButton(ActionEvent event) {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Create New User");
-        dialog.setHeaderText("Enter new user's username:");
+        dialog.setTitle("Create a New Account");
+        dialog.setHeaderText("Please enter a new username:");
         dialog.setContentText("Username:");
+        
+        Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+        
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             String newUserName = result.get().trim();
-            if (!newUserName.isEmpty() && !"admin".equals(newUserName)) {
-                app.Photos.admin.addUser(newUserName);
-                System.out.println("User created: " + newUserName);
-                populateUsers(); // refresh the list
+            if(newUserName.equals("admin")) {
+            	Alert alert = new Alert(AlertType.ERROR);
+            	alert.setTitle("Error");
+            	alert.setHeaderText(null);
+                alert.setContentText("Invalid username!");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                alert.showAndWait();
+                return;
+            }
+            if (newUserName.isEmpty()) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Username cannot be empty");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                alert.showAndWait();
+                return;
+            }
+            if (!"admin".equals(newUserName)) {
+                ArrayList<User> users = app.Photos.admin.listUsers();
+                if (users.contains(new User(newUserName))) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Username already exists");
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                    alert.showAndWait();
+                    return;
+                } else {
+                    app.Photos.admin.addUser(newUserName);
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("User Created");
+                    alert.setHeaderText(null);
+                    alert.setContentText("User created!");
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                    alert.showAndWait();
+                    System.out.println("User created: " + newUserName);
+                    populateUsers(); // Refresh the user list.
+                }
             }
         }
     }
+
     
     @FXML
     private void handleLogout(ActionEvent event) throws IOException {
