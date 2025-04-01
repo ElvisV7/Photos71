@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.HBox?>
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21.0.6"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" 
+            xmlns="http://javafx.com/javafx/21.0.6"
             fx:controller="view.AlbumController">
     <center>
-        <!-- The FlowPane will be populated dynamically by the controller with the user's albums -->
-        <FlowPane fx:id="albumFlowPane" hgap="10" vgap="10">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
-        </FlowPane>
+        <ScrollPane fitToWidth="true">
+            <content>
+                <TilePane fx:id="albumTilePane" hgap="10" vgap="10" prefColumns="3">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                </TilePane>
+            </content>
+        </ScrollPane>
     </center>
     <bottom>
-        <!-- HBox containing the "Add Album" and "Logout" buttons -->
         <HBox spacing="10" alignment="CENTER">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>

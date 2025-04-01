@@ -129,7 +129,6 @@ public class AdminSubSystem {
                     Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
                     alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
                     alert.showAndWait();
-                    System.out.println("User created: " + newUserName);
                     populateUsers(); // Refresh the user list.
                 }
             }

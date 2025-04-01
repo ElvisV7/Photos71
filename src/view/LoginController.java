@@ -8,6 +8,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -37,7 +39,6 @@ public class LoginController {
         String uname = username.getText().trim();
         // Check if admin
         if ("admin".equals(uname)) {
-            System.out.println(app.Photos.admin.getUsername() + " logged in!");
             Parent newRoot = FXMLLoader.load(getClass().getResource("/view/adminSubSystem.fxml"));
             Scene newScene = new Scene(newRoot, 600, 400);
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -54,7 +55,6 @@ public class LoginController {
             // Set the current user for album display.
             AlbumController.currentUser = user;
             errorLabel.setText("");
-            System.out.println(user.getUsername() + " logged in!");
             Parent newRoot = FXMLLoader.load(getClass().getResource("/view/home.fxml"));
             Scene newScene = new Scene(newRoot, 600, 400);
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -87,8 +87,8 @@ public class LoginController {
                     errorLabel.setText("Username already exists");
                 } else {
                     app.Photos.admin.addUser(newUser);
+                    errorLabel.setStyle("-fx-text-fill: blue;");
                     errorLabel.setText("User created! Please log in.");
-                    System.out.println("New user created: " + newUser);
                 }
             }
         }
