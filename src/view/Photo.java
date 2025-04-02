@@ -7,6 +7,7 @@ import java.util.Objects;
 public class Photo {
     private String path;
     private Calendar date_taken;
+    private String caption;
     
     public Photo(String path) {
         this.path = path;
@@ -15,6 +16,7 @@ public class Photo {
         cal.setTimeInMillis(file.lastModified());
         cal.set(Calendar.MILLISECOND, 0);
         this.date_taken = cal;
+        this.caption = "";
     }
     
     public String getPath() {
@@ -23,6 +25,15 @@ public class Photo {
     
     public Calendar getDate() {
         return this.date_taken;
+    }
+    
+    public String getCaption() {
+    	return this.caption;
+    }
+    
+    // Modifier
+    public void setCaption(String caption) {
+    	this.caption = caption;
     }
     
     @Override

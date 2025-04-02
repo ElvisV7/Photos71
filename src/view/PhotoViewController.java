@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,8 +13,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -77,7 +81,8 @@ public class PhotoViewController implements Initializable {
         container.setAlignment(Pos.CENTER);
         container.setSpacing(5);
         Label nameLabel = new Label(new java.io.File(photo.getPath()).getName());
-        container.getChildren().addAll(photoIcon, nameLabel);
+        Label captionLabel = new Label(photo.getCaption());
+        container.getChildren().addAll(photoIcon, nameLabel, captionLabel);
         photoTilePane.getChildren().add(container);
     }
     
@@ -110,7 +115,13 @@ public class PhotoViewController implements Initializable {
         // Although the upload button should be hidden for "Stock Images",
         // we add an extra check here.
         if (album != null && "Stock Images".equals(album.getName())) {
-            System.out.println("Upload not allowed for Stock Images album.");
+        	Alert alert = new Alert(AlertType.ERROR);
+        	alert.setTitle("Error");
+        	alert.setHeaderText(null);
+            alert.setContentText("Upload not allowed for Stock Images album.");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+            alert.showAndWait();
             return;
         }
         
@@ -127,6 +138,22 @@ public class PhotoViewController implements Initializable {
                 try {
                     // Create a new Photo using the absolute file path.
                     Photo newPhoto = new Photo(file.getAbsolutePath());
+                    // Prompt user for a caption. If nothing is entered, it is assumed there is no caption.
+                    TextInputDialog dialog = new TextInputDialog();
+                    dialog.setTitle("Add a Caption");
+                    dialog.setHeaderText("Please enter a caption for the photo (optional):");
+                    dialog.setContentText("Caption:");
+                    
+                    Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+                    dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                    
+                    Optional<String> result = dialog.showAndWait();
+                    if (result.isPresent()) {
+                        String caption = result.get().trim();
+                        if(!caption.isEmpty()) {
+                        	newPhoto.setCaption(caption);
+                        }
+                    }
                     // Add the photo to the album.
                     album.addPhoto(newPhoto);
                     // Update the display by adding the new photo.
