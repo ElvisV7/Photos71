@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21.0.6" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="view.EditPhotoDialogController"
+      spacing="10" alignment="CENTER">
+    <padding>
+    	<Insets top="10" right="10" bottom="10" left="10"/>
+	</padding>
+      
+  
+    <Label text="Edit Photo" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+    
+    <!-- Caption editing section -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+         <Label text="Caption:"/>
+         <TextField fx:id="captionField" prefWidth="300"/>
+    </HBox>
+    
+    <Separator/>
+    
+    <!-- Tag editing section -->
+    <Label text="Edit Tags" style="-fx-font-size: 16px;"/>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+         <Label text="Tag Type:"/>
+         <ComboBox fx:id="tagTypeCombo" prefWidth="150"/>
+    </HBox>
+    
+    <!-- Container where tag-specific input will be shown -->
+    <VBox fx:id="tagInputArea" spacing="5" alignment="CENTER_LEFT"/>
+    
+    <!-- Buttons to add tag (if needed) and finish editing -->
+    <HBox spacing="10" alignment="CENTER">
+         <Button text="Add Tag" onAction="#handleAddTag"/>
+         <Button text="Done" onAction="#handleDone"/>
+    </HBox>
+</VBox>

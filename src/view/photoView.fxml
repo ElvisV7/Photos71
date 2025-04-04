@@ -5,13 +5,22 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21.0.6"
             fx:controller="view.PhotoViewController">
     <top>
-        <StackPane alignment="CENTER">
-            <Button fx:id="uploadPhotoButton" text="Upload Photo" onAction="#handleUploadPhoto"/>
-        </StackPane>
+        <HBox alignment="TOP_RIGHT" spacing="10">
+            <children>
+                <Button text="Search" onAction="#handleSearch"/>
+                <Button text="Clear Search" onAction="#handleClearSearch"/>
+                <!-- New button for creating album from search results -->
+                <Button fx:id="createAlbumButton" text="Create Album" onAction="#handleCreateAlbum" visible="false"/>
+            </children>
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+        </HBox>
     </top>
     <center>
         <ScrollPane fitToWidth="true">
@@ -24,7 +33,12 @@
             </content>
         </ScrollPane>
     </center>
-    <bottom>
-        <Button text="Back" onAction="#handleBack"/>
-    </bottom>
+	<bottom>
+	    <HBox alignment="CENTER" spacing="10">
+	        <Button fx:id="uploadPhotoButton" text="Upload Photo" onAction="#handleUploadPhoto"/>
+	        <Button text="Manual Slideshow" onAction="#handleManualSlideshow"/>
+	        <Button text="Back" onAction="#handleBack"/>
+	    </HBox>
+	</bottom>
+
 </BorderPane>

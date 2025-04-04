@@ -8,18 +8,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Label;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 
 public class AdminSubSystem {
 
@@ -28,12 +25,15 @@ public class AdminSubSystem {
     
     @FXML
     public void initialize() {
-        // Automatically populate the FlowPane when the admin page loads.
         populateUsers();
     }
     
     private void populateUsers() {
+        // Use the central user list from admin.
         ArrayList<User> temp = app.Photos.admin.listUsers();
+        if (temp == null) {
+            temp = new ArrayList<>();
+        }
         userFlowPane.getChildren().clear();
         for (User user : temp) {
             userFlowPane.getChildren().add(createUserBox(user));
@@ -45,22 +45,18 @@ public class AdminSubSystem {
         box.setSpacing(5);
         box.setAlignment(Pos.CENTER);
         
-        // Determine which icon to use: a special one for admin, a regular one for others.
-        String iconPath;
+        // Use a special icon for admin.
+        String iconPath = "user_icon.png";
         if ("admin".equals(user.getUsername())) {
-            iconPath = "/view/admin_icon.png"; // Ensure this file exists in your resources.
-        } else {
-            iconPath = "/view/user_icon.png";
+            iconPath = "admin_icon.png";
         }
-        // Assume the icons are in the /view folder.
-        Image userImage = new Image(getClass().getResourceAsStream(iconPath));
-
+        Image userImage = new Image(getClass().getResourceAsStream("/view/" + iconPath));
         ImageView userIcon = new ImageView(userImage);
         userIcon.setFitWidth(150);
         userIcon.setFitHeight(150);
         userIcon.setPreserveRatio(true);
         
-        Label nameLabel = new Label("admin".equals(user.getUsername())? "admin (self)" : user.getUsername());
+        Label nameLabel = new Label("admin".equals(user.getUsername()) ? "admin (self)" : user.getUsername());
         box.getChildren().addAll(userIcon, nameLabel);
         
         // Add a "Delete User" button for non-admin users.
@@ -68,20 +64,27 @@ public class AdminSubSystem {
             Button deleteButton = new Button("Delete User");
             deleteButton.setOnAction(e -> {
                 app.Photos.admin.deleteUser(user);
-                populateUsers(); // refresh the FlowPane after deletion
+                populateUsers(); // Refresh the list after deletion.
             });
             box.getChildren().add(deleteButton);
         }
         
         return box;
     }
-
+    
     @FXML
     private void handleCreateUserButton(ActionEvent event) {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Create a New Account");
-        dialog.setHeaderText("Please enter a new username:");
+        dialog.setTitle("Create New User");
+        dialog.setHeaderText("Enter new user's username:");
         dialog.setContentText("Username:");
+        
+        // Set the graphic to display the icon
+        ImageView imageView = new ImageView(new Image("/view/user_icon.png"));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+        dialog.setGraphic(imageView);
         
         Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
         dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
@@ -89,52 +92,32 @@ public class AdminSubSystem {
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             String newUserName = result.get().trim();
-            if(newUserName.equals("admin")) {
+            if("admin".equals(newUserName) || app.Photos.admin.listUsers().contains(new User(newUserName))) {
             	Alert alert = new Alert(AlertType.ERROR);
             	alert.setTitle("Error");
-            	alert.setHeaderText(null);
-                alert.setContentText("Invalid username!");
-                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
-                alert.showAndWait();
-                return;
+	        	alert.setHeaderText(null);
+	            alert.setContentText("Username: " + newUserName +" is already in use!");
+	            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+	            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+	            alert.showAndWait();
+	            return;
             }
-            if (newUserName.isEmpty()) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Username cannot be empty");
-                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
-                alert.showAndWait();
-                return;
+            if(newUserName.isEmpty()) {
+            	Alert alert = new Alert(AlertType.ERROR);
+            	alert.setTitle("Error");
+	        	alert.setHeaderText(null);
+	            alert.setContentText("Username cannot be empty!");
+	            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+	            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+	            alert.showAndWait();
+	            return;
             }
-            if (!"admin".equals(newUserName)) {
-                ArrayList<User> users = app.Photos.admin.listUsers();
-                if (users.contains(new User(newUserName))) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Username already exists");
-                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
-                    alert.showAndWait();
-                    return;
-                } else {
-                    app.Photos.admin.addUser(newUserName);
-                    Alert alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("User Created");
-                    alert.setHeaderText(null);
-                    alert.setContentText("User created!");
-                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
-                    alert.showAndWait();
-                    populateUsers(); // Refresh the user list.
-                }
+            if (!newUserName.isEmpty() && !"admin".equals(newUserName)) {
+                app.Photos.admin.addUser(newUserName);
+                populateUsers();
             }
         }
     }
-
     
     @FXML
     private void handleLogout(ActionEvent event) throws IOException {

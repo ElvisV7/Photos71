@@ -21,6 +21,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.geometry.Pos;
+import java.text.SimpleDateFormat;
 
 public class AlbumController {
 
@@ -32,16 +33,8 @@ public class AlbumController {
     
     @FXML
     private void initialize() {
-        // Ensure the default album "Stock Images" exists.
+        // populate albums
         if (currentUser != null) {
-            boolean defaultExists = currentUser.getAlbums().stream()
-                    .anyMatch(a -> a.getName().equals("Stock Images"));
-            if (!defaultExists) {
-                Album defaultAlbum = new Album("Stock Images");
-                // Optionally add preloaded stock photos:
-                // defaultAlbum.addPhoto(new Photo("path/to/stock/photo1.jpg"));
-                currentUser.getAlbums().add(defaultAlbum);
-            }
             populateAlbums();
         }
     }
@@ -67,8 +60,15 @@ public class AlbumController {
         dialog.setHeaderText("Please enter a new name for the album:");
         dialog.setContentText("Name:");
         
+        // Set the graphic to display the icon
+        ImageView imageView = new ImageView(new Image("/view/folder_icon.png"));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+        dialog.setGraphic(imageView);
+        
         Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+        dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
         
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
@@ -79,7 +79,7 @@ public class AlbumController {
                 alert.setHeaderText(null);
                 alert.setContentText("Invalid name!");
                 Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
                 alert.showAndWait();
                 return;
             }
@@ -89,7 +89,7 @@ public class AlbumController {
                 alert.setHeaderText(null);
                 alert.setContentText("Album name cannot be empty");
                 Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
                 alert.showAndWait();
                 return;
             }
@@ -100,7 +100,7 @@ public class AlbumController {
                 alert.setHeaderText(null);
                 alert.setContentText("Album name: " + newAlbumName + " is already in use!");
                 Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
                 alert.showAndWait();
                 return;
             }
@@ -109,7 +109,7 @@ public class AlbumController {
             alert.setHeaderText(null);
             alert.setContentText("Album name was changed!");
             Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
             alert.showAndWait();
             currentUser.getAlbums().get(index).changeName(newAlbumName);
         }
@@ -129,11 +129,28 @@ public class AlbumController {
         folderIcon.setPreserveRatio(true);
 
         Label nameLabel = new Label(album.getName());
+        Label numberLabel = new Label("Number of photos: " + album.getPhotos().size());
+        
+        // Sort the list based on dates from earliest to latest, but only if the album
+        // isn't empty
+        if(album.getPhotos().size() != 0) {
+        	album.getPhotos().sort((p1, p2) -> p1.getDate().compareTo(p2.getDate()));
 
-        // Add the folder icon and album name to the box.
-        box.getChildren().addAll(folderIcon, nameLabel);
-
-        // Only add "Remove" and "Rename" buttons if the album is not "Stock Images"
+            // Format the earliest date (first element) as a String
+            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+            String earliestDate = sdf.format(album.getPhotos().get(0).getDate().getTime()); 
+            String latestDate = sdf.format(album.getPhotos().get(album.getPhotos().size()-1).getDate().getTime());
+            
+            Label datesLabel = new Label("Dates: " + earliestDate + " - " + latestDate);
+            
+            // Add the folder icon and album name to the box.
+            box.getChildren().addAll(folderIcon, nameLabel, numberLabel, datesLabel);
+        }
+        else {
+	        // Add the folder icon and album name to the box.	
+	        box.getChildren().addAll(folderIcon, nameLabel, numberLabel);
+        }
+	    // Only add "Remove" and "Rename" buttons if the album is not "Stock Images"
         if (!"Stock Images".equals(album.getName())) {
             Button removeButton = new Button("Remove");
             removeButton.setOnAction(e -> removeAlbum(album));
@@ -186,6 +203,13 @@ public class AlbumController {
         dialog.setHeaderText("Create a New Album");
         dialog.setContentText("Please enter album name:");
         
+        // Set the graphic to display the icon
+        ImageView imageView = new ImageView(new Image("/view/folder_icon.png"));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+        dialog.setGraphic(imageView);
+        
         Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
         dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
         
@@ -209,6 +233,14 @@ public class AlbumController {
                     currentUser.getAlbums().add(newAlbum);
                     albumTilePane.getChildren().add(createAlbumBox(newAlbum));
                 }
+            }else {
+            	Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Album name cannot be empty!");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+                alert.showAndWait();
             }
         }
     }

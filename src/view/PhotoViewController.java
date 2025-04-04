@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -11,93 +15,279 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import java.util.stream.Collectors;
+
 
 public class PhotoViewController implements Initializable {
 
     @FXML
     private TilePane photoTilePane;
     
-    // Inject the upload button
+    // Upload button injected from the FXML.
     @FXML
     private Button uploadPhotoButton;
     
+    // Button that appears only after a search is done.
+    @FXML
+    private Button createAlbumButton;
+    
     private Album album;
+    
+    // Holds filtered photos when a search is active.
+    private List<Photo> searchResults = null;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // You may populate your TilePane here or later via setAlbum.
+        // Nothing special to do here.
     }
     
     public void setAlbum(Album album) {
         this.album = album;
         updatePhotoDisplay();
-        
-        // Hide the upload button if this is the "Stock Images" album.
+        // Hide upload button if album is Stock Images.
         if ("Stock Images".equals(album.getName())) {
             uploadPhotoButton.setVisible(false);
         } else {
             uploadPhotoButton.setVisible(true);
         }
+        // Initially, no search is active.
+        createAlbumButton.setVisible(false);
     }
     
     private void updatePhotoDisplay() {
         photoTilePane.getChildren().clear();
-        if (album != null) {
-            for (Photo photo : album.getPhotos()) {
-                addPhotoToTile(photo);
+        List<Photo> displayPhotos = (searchResults != null) ? searchResults : album.getPhotos();
+        for (Photo photo : displayPhotos) {
+            addPhotoToTile(photo);
+        }
+    }
+    
+    private void editPhoto(Photo photo) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/editPhotoDialog.fxml"));
+            Parent root = loader.load();
+            EditPhotoDialogController controller = loader.getController();
+            controller.setPhoto(photo);
+            
+            Stage stage = new Stage();
+            stage.setTitle("Edit Photo");
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            
+            updatePhotoDisplay();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private void copyPhoto(Photo photo) {
+        String path = photo.getPath();
+        String imageUrl = path.matches("^[a-zA-Z]:.*") ? "file:" + path : path;
+        
+        ArrayList<Album> albums = AlbumController.currentUser.getAlbums();
+        ArrayList<String> albumNames = new ArrayList<>();
+        for (Album a : albums) {
+            albumNames.add(a.getName());
+        }
+        
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(albumNames.get(0), albumNames);
+        dialog.setTitle("Copy Photo");
+        dialog.setHeaderText("Select the album to copy the photo to:");
+        dialog.setContentText("Album:");
+        
+        ImageView imageView = new ImageView(new Image(imageUrl));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+        dialog.setGraphic(imageView);
+        
+        Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+        
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String chosenAlbumName = result.get();
+            Album destAlbum = albums.stream()
+                                      .filter(a -> a.getName().equals(chosenAlbumName))
+                                      .findFirst().orElse(null);
+            if (destAlbum != null) {
+                if (!destAlbum.getPhotos().contains(photo)) {
+                    destAlbum.addPhoto(photo);
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Photo Copied");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Photo copied to album: " + chosenAlbumName);
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                    alert.showAndWait();
+                } else {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Photo Already Exists");
+                    alert.setHeaderText(null);
+                    alert.setContentText("This photo is already in album: " + chosenAlbumName);
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                    alert.showAndWait();
+                }
+            }
+        }
+    }
+    
+    private void movePhoto(Photo photo) {
+        String path = photo.getPath();
+        String imageUrl = path.matches("^[a-zA-Z]:.*") ? "file:" + path : path;
+        
+        ArrayList<Album> albums = AlbumController.currentUser.getAlbums();
+        ArrayList<String> destinationNames = new ArrayList<>();
+        for (Album a : albums) {
+            if (!a.getName().equals(album.getName())) {
+                destinationNames.add(a.getName());
+            }
+        }
+        if (destinationNames.isEmpty()) {
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("No Destination");
+            alert.setHeaderText(null);
+            alert.setContentText("No other album available to move the photo to.");
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+            alert.showAndWait();
+            return;
+        }
+        
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(destinationNames.get(0), destinationNames);
+        dialog.setTitle("Move Photo");
+        dialog.setHeaderText("Select the album to move the photo to:");
+        dialog.setContentText("Album:");
+        
+        ImageView imageView = new ImageView(new Image(imageUrl));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+        dialog.setGraphic(imageView);
+        
+        Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+        
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String chosenAlbumName = result.get();
+            Album destAlbum = albums.stream()
+                                      .filter(a -> a.getName().equals(chosenAlbumName))
+                                      .findFirst().orElse(null);
+            if (destAlbum != null) {
+                album.getPhotos().remove(photo);
+                destAlbum.addPhoto(photo);
+                updatePhotoDisplay();
+                
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Photo Moved");
+                alert.setHeaderText(null);
+                alert.setContentText("Photo moved to album: " + chosenAlbumName);
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+                alert.showAndWait();
             }
         }
     }
     
     private void addPhotoToTile(Photo photo) {
-        // Load image and create an ImageView, etc.
         Image image = new Image(getImageInputStream(photo.getPath()));
         ImageView photoIcon = new ImageView(image);
         photoIcon.setFitWidth(150);
         photoIcon.setFitHeight(150);
         photoIcon.setPreserveRatio(true);
         
-        photoIcon.setOnMouseClicked((MouseEvent event) -> {
-            openPhoto(image, event);
+        // Create a small remove button with an icon.
+        Button removeButton = new Button();
+        removeButton.setStyle("-fx-background-color: transparent;");
+        Image removeIcon = new Image(getClass().getResourceAsStream("/view/remove_icon.png"));
+        ImageView removeIconView = new ImageView(removeIcon);
+        removeIconView.setFitWidth(25);
+        removeIconView.setFitHeight(25);
+        removeButton.setGraphic(removeIconView);
+        // Install a tooltip that displays "remove" on hover.
+        Tooltip.install(removeButton, new Tooltip("Remove"));
+        
+        removeButton.setOnAction(e -> {
+            album.getPhotos().remove(photo);
+            updatePhotoDisplay();
+            e.consume();
         });
         
+        // Create a StackPane to overlay the remove button on the image.
+        StackPane imageContainer = new StackPane();
+        imageContainer.getChildren().add(photoIcon);
+        // Only add the remove button if the album is not "Stock Images".
+        if (!"Stock Images".equals(album.getName())) {
+            imageContainer.getChildren().add(removeButton);
+            StackPane.setAlignment(removeButton, Pos.TOP_RIGHT);
+            StackPane.setMargin(removeButton, new Insets(5));
+        }
+        
+        // Set a click handler that opens the photo detail if not clicking on a button.
+        imageContainer.setOnMouseClicked(event -> {
+            if (!(event.getTarget() instanceof Button)) {
+                openPhoto(photo, event);
+            }
+        });
+        
+        // Create extra buttons only if not in Stock Images.
         VBox container = new VBox();
         container.setAlignment(Pos.CENTER);
         container.setSpacing(5);
-        Label nameLabel = new Label(new java.io.File(photo.getPath()).getName());
+        Label nameLabel = new Label(new File(photo.getPath()).getName());
         Label captionLabel = new Label(photo.getCaption());
-        container.getChildren().addAll(photoIcon, nameLabel, captionLabel);
+        
+        if (!"Stock Images".equals(album.getName())) {
+            Button editButton = new Button("Edit");
+            editButton.setOnAction(e -> editPhoto(photo));
+            Button copyButton = new Button("Copy");
+            copyButton.setOnAction(e -> copyPhoto(photo));
+            Button moveButton = new Button("Move");
+            moveButton.setOnAction(e -> movePhoto(photo));
+            HBox buttonsBox = new HBox(10, editButton, copyButton, moveButton);
+            buttonsBox.setAlignment(Pos.CENTER);
+            container.getChildren().addAll(imageContainer, nameLabel, captionLabel, buttonsBox);
+        } else {
+            container.getChildren().addAll(imageContainer, nameLabel, captionLabel);
+        }
         photoTilePane.getChildren().add(container);
     }
     
     private FileInputStream getImageInputStream(String path) {
-        // Implementation that distinguishes resource vs. file paths.
         try {
             if (path.startsWith("/")) {
                 URL resourceUrl = getClass().getResource(path);
                 if (resourceUrl != null) {
-                    return new FileInputStream(new java.io.File(resourceUrl.toURI()));
+                    return new FileInputStream(new File(resourceUrl.toURI()));
                 } else {
                     throw new RuntimeException("Resource not found: " + path);
                 }
             } else {
-                java.io.File file = new java.io.File(path);
+                File file = new File(path);
                 if (file.exists()) {
                     return new FileInputStream(file);
                 } else {
@@ -112,12 +302,10 @@ public class PhotoViewController implements Initializable {
     
     @FXML
     private void handleUploadPhoto(ActionEvent event) {
-        // Although the upload button should be hidden for "Stock Images",
-        // we add an extra check here.
         if (album != null && "Stock Images".equals(album.getName())) {
-        	Alert alert = new Alert(AlertType.ERROR);
-        	alert.setTitle("Error");
-        	alert.setHeaderText(null);
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
             alert.setContentText("Upload not allowed for Stock Images album.");
             Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
             alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
@@ -134,15 +322,37 @@ public class PhotoViewController implements Initializable {
         List<File> files = fileChooser.showOpenMultipleDialog(stage);
         
         if (files != null && !files.isEmpty() && album != null) {
+            String username = AlbumController.currentUser.getUsername();
+            Path albumDir = Path.of(app.Photos.usersDir, username, album.getName());
+            try {
+                Files.createDirectories(albumDir);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+                return;
+            }
+            
             for (File file : files) {
                 try {
-                    // Create a new Photo using the absolute file path.
-                    Photo newPhoto = new Photo(file.getAbsolutePath());
-                    // Prompt user for a caption. If nothing is entered, it is assumed there is no caption.
+                    Path destination = albumDir.resolve(file.getName());
+                    byte[] data = Files.readAllBytes(file.toPath());
+                    Files.write(destination, data);
+                    java.nio.file.attribute.FileTime fileTime = Files.getLastModifiedTime(file.toPath());
+                    Files.setLastModifiedTime(destination, fileTime);
+                    
+                    Photo newPhoto = new Photo(destination.toString());
+                    
                     TextInputDialog dialog = new TextInputDialog();
                     dialog.setTitle("Add a Caption");
                     dialog.setHeaderText("Please enter a caption for the photo (optional):");
                     dialog.setContentText("Caption:");
+                    
+                    String p = newPhoto.getPath();
+                    String imageUrl = p.matches("^[a-zA-Z]:.*") ? "file:" + p : p;
+                    ImageView iv = new ImageView(new Image(imageUrl));
+                    iv.setFitWidth(150);
+                    iv.setFitHeight(150);
+                    iv.setPreserveRatio(true);
+                    dialog.setGraphic(iv);
                     
                     Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
                     dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
@@ -150,13 +360,11 @@ public class PhotoViewController implements Initializable {
                     Optional<String> result = dialog.showAndWait();
                     if (result.isPresent()) {
                         String caption = result.get().trim();
-                        if(!caption.isEmpty()) {
-                        	newPhoto.setCaption(caption);
+                        if (!caption.isEmpty()) {
+                            newPhoto.setCaption(caption);
                         }
                     }
-                    // Add the photo to the album.
                     album.addPhoto(newPhoto);
-                    // Update the display by adding the new photo.
                     addPhotoToTile(newPhoto);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -174,12 +382,13 @@ public class PhotoViewController implements Initializable {
         stage.show();
     }
     
-    private void openPhoto(Image photo, MouseEvent event) {
+    private void openPhoto(Photo photo, MouseEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/photoDetail.fxml"));
             Parent detailRoot = loader.load();
             PhotoDetailController detailController = loader.getController();
-            detailController.setImage(photo);
+            detailController.setPhoto(photo);
+            detailController.setImage(new Image(getImageInputStream(photo.getPath())));
             Scene currentScene = photoTilePane.getScene();
             detailController.setPreviousScene(currentScene);
             Scene detailScene = new Scene(detailRoot, 900, 600);
@@ -187,6 +396,148 @@ public class PhotoViewController implements Initializable {
             stage.setScene(detailScene);
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+    
+    // --- Search Functionality ---
+    @FXML
+    private void handleSearch(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/searchDialog.fxml"));
+            Parent root = loader.load();
+            SearchDialogController controller = loader.getController();
+            
+            Stage stage = new Stage();
+            stage.setTitle("Search Photos");
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            
+            Optional<SearchDialogController.SearchCriteria> optionalCriteria = controller.getCriteria();
+            if (optionalCriteria.isPresent()) {
+                SearchDialogController.SearchCriteria criteria = optionalCriteria.get();
+                List<Photo> filtered = album.getPhotos();
+                if (criteria.startDate != null && criteria.endDate != null) {
+                    filtered = filtered.stream().filter(photo -> {
+                        LocalDate photoDate = photo.getDate().toInstant()
+                                .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                        return !photoDate.isBefore(criteria.startDate) && !photoDate.isAfter(criteria.endDate);
+                    }).collect(Collectors.toList());
+                }
+                if (!criteria.tagType.isEmpty() && !criteria.tagValue.isEmpty()) {
+                    filtered = filtered.stream().filter(photo -> {
+                        return photo.getTags().stream()
+                                .anyMatch(tag -> tag.equalsIgnoreCase(criteria.tagType + ":" + criteria.tagValue));
+                    }).collect(Collectors.toList());
+                }
+                searchResults = filtered;
+                updatePhotoDisplay();
+                createAlbumButton.setVisible(true);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleClearSearch(ActionEvent event) {
+        searchResults = null;
+        updatePhotoDisplay();
+        createAlbumButton.setVisible(false);
+    }
+    
+    @FXML
+    private void handleCreateAlbum(ActionEvent event) {
+        // Open a TextInputDialog to get the new album name from the user.
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Create Album from Search Results");
+        dialog.setHeaderText("Enter a name for the new album:");
+        dialog.setContentText("Album name:");
+        
+        // Set the graphic to display the icon
+        ImageView imageView = new ImageView(new Image("/view/folder_icon.png"));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+        dialog.setGraphic(imageView);
+        
+        Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+        
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String newAlbumName = result.get().trim();
+            if (newAlbumName.isEmpty()) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Album name cannot be empty.");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+                alert.showAndWait();
+                return;
+            }
+            // Check if the current user already has an album with the given name.
+            boolean exists = AlbumController.currentUser.getAlbums().stream()
+                    .anyMatch(album -> album.getName().equalsIgnoreCase(newAlbumName));
+            if (exists) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("An album with the name: " + newAlbumName + " already exists.");
+                Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+                alert.showAndWait();
+                return;
+            }
+            // Create the new album and fill it with the photos from the search.
+            // (Assuming searchResults is a List<Photo> field holding the filtered photos.)
+            Album newAlbum = new Album(newAlbumName);
+            newAlbum.getPhotos().addAll(searchResults);
+            AlbumController.currentUser.getAlbums().add(newAlbum);
+            
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Album Created");
+            alert.setHeaderText(null);
+            alert.setContentText("Album created successfully: " + newAlbumName);
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
+            alert.showAndWait();
+            
+            // Optionally refresh the album view if needed.
+        }
+    }
+
+   
+    @FXML
+    private void handleManualSlideshow(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/slideshow.fxml"));
+            Parent root = loader.load();
+            SlideshowController controller = loader.getController();
+            // Pass the album's photos to the slideshow.
+            controller.setPhotos(album.getPhotos());
+            
+            Stage stage = new Stage();
+            stage.setTitle("Manual Slideshow");
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+            stage.setScene(new Scene(root, 900, 600));
+            stage.show();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+ // Helper method to get image URL.
+    public static String getImageURL(String path) {
+        if (path.startsWith("/")) {
+            URL resourceUrl = PhotoViewController.class.getResource(path);
+            if (resourceUrl != null) {
+                return resourceUrl.toExternalForm();
+            } else {
+                throw new RuntimeException("Resource not found: " + path);
+            }
+        } else {
+            return "file:" + path;
         }
     }
 }

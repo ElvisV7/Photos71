@@ -1,14 +1,20 @@
 package view;
 
 import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
 
-public class Photo {
+public class Photo implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private String path;
     private Calendar date_taken;
-    private String caption;
-    
+    private String caption = ""; // default caption
+    // add tags here
+    private ArrayList<String> tags;
+
     public Photo(String path) {
         this.path = path;
         File file = new File(path);
@@ -16,7 +22,6 @@ public class Photo {
         cal.setTimeInMillis(file.lastModified());
         cal.set(Calendar.MILLISECOND, 0);
         this.date_taken = cal;
-        this.caption = "";
     }
     
     public String getPath() {
@@ -28,12 +33,20 @@ public class Photo {
     }
     
     public String getCaption() {
-    	return this.caption;
+        return caption;
     }
     
-    // Modifier
+    public ArrayList<String> getTags(){
+    	return this.tags;
+    }
+    
     public void setCaption(String caption) {
-    	this.caption = caption;
+        this.caption = caption;
+    }
+    
+    /* Complete:                    V this could be changed for a programmer version of Tag (a class) */
+    public void setTags(ArrayList<String> tags) {
+    	// Complete the implementation of tags
     }
     
     @Override

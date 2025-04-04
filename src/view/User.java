@@ -1,23 +1,19 @@
 package view;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private String username;
     private ArrayList<Album> albums;
     
     public User(String username) {
         this.username = username;
         this.albums = new ArrayList<>();
-        // Create the default "Stock Images" album.
-        Album defaultAlbum = new Album("Stock Images");
-        defaultAlbum.addPhoto(new Photo("/app/icon.png")); 
-        defaultAlbum.addPhoto(new Photo("/view/folder_icon.png"));
-        defaultAlbum.addPhoto(new Photo("/view/background.jpeg"));
-        this.albums.add(defaultAlbum);
     }
-
     
     public String getUsername() {
         return this.username;

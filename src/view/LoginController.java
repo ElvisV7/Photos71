@@ -8,13 +8,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -31,13 +27,12 @@ public class LoginController {
     @FXML
     private Label errorLabel;
     
-    // Hold users in memory (the Admin user is added by default)
-    private static ArrayList<User> users = app.Photos.admin.listUsers();
+    // Removed local static 'users'; we now rely on the central list managed by Admin.
     
     @FXML
     void handleSubmitAction(ActionEvent event) throws IOException {
         String uname = username.getText().trim();
-        // Check if admin
+        // Special handling for admin login.
         if ("admin".equals(uname)) {
             Parent newRoot = FXMLLoader.load(getClass().getResource("/view/adminSubSystem.fxml"));
             Scene newScene = new Scene(newRoot, 600, 400);
@@ -48,12 +43,13 @@ public class LoginController {
             return;
         }
         
+        // Use the shared user list from the admin instance.
+        ArrayList<User> users = app.Photos.admin.listUsers();
         User temp = new User(uname);
         int index = users.indexOf(temp);
         if (index != -1) {
             User user = users.get(index);
-            // Set the current user for album display.
-            AlbumController.currentUser = user;
+            AlbumController.currentUser = user;  // Set current user for album display.
             errorLabel.setText("");
             Parent newRoot = FXMLLoader.load(getClass().getResource("/view/home.fxml"));
             Scene newScene = new Scene(newRoot, 600, 400);
@@ -62,6 +58,7 @@ public class LoginController {
             currentStage.setResizable(true);
             currentStage.show();
         } else {
+        	errorLabel.setStyle("-fx-text-fill: red;");
             errorLabel.setText("Invalid username");
         }
     }
@@ -73,6 +70,14 @@ public class LoginController {
         dialog.setHeaderText("Create a New Account");
         dialog.setContentText("Please enter a new username:");
         
+        // Set a graphic for the dialog.
+        Image userImage = new Image(getClass().getResourceAsStream("/view/user_icon.png"));
+        ImageView userIcon = new ImageView(userImage);
+        userIcon.setFitWidth(150);
+        userIcon.setFitHeight(150);
+        userIcon.setPreserveRatio(true);
+        dialog.setGraphic(userIcon);
+        
         Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
         dialogStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
         
@@ -80,18 +85,36 @@ public class LoginController {
         if (result.isPresent()) {
             String newUser = result.get().trim();
             if (newUser.isEmpty()) {
+                errorLabel.setStyle("-fx-text-fill: red;");
                 errorLabel.setText("Username cannot be empty");
             } else {
                 ArrayList<User> users = app.Photos.admin.listUsers();
                 if (users.contains(new User(newUser))) {
+                    errorLabel.setStyle("-fx-text-fill: red;");
                     errorLabel.setText("Username already exists");
                 } else {
                     app.Photos.admin.addUser(newUser);
-                    errorLabel.setStyle("-fx-text-fill: blue;");
+                    // Use a slightly dark sky blue, for example, hex code #00aaff.
+                    errorLabel.setStyle("-fx-text-fill: #00aaff;");
                     errorLabel.setText("User created! Please log in.");
                 }
             }
         }
     }
 
+    
+    @FXML
+    void handleLogout(ActionEvent event) throws IOException {
+        // Optionally save state (using the centralized user list).
+        try {
+            util.PersistenceManager.saveUsers(app.Photos.admin.listUsers());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Parent loginView = FXMLLoader.load(getClass().getResource("/view/login.fxml"));
+        Scene loginScene = new Scene(loginView, 600, 400);
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setScene(loginScene);
+        stage.show();
+    }
 }
