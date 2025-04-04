@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -36,45 +37,49 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import java.util.stream.Collectors;
-
 
 public class PhotoViewController implements Initializable {
 
     @FXML
     private TilePane photoTilePane;
-    
+
     // Upload button injected from the FXML.
     @FXML
     private Button uploadPhotoButton;
-    
+
     // Button that appears only after a search is done.
     @FXML
     private Button createAlbumButton;
-    
+
     private Album album;
-    
+
     // Holds filtered photos when a search is active.
     private List<Photo> searchResults = null;
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Nothing special to do here.
+        // Nothing additional on initialize.
     }
-    
+
     public void setAlbum(Album album) {
         this.album = album;
         updatePhotoDisplay();
-        // Hide upload button if album is Stock Images.
+        // Hide upload button if album is "Stock Images".
         if ("Stock Images".equals(album.getName())) {
-            uploadPhotoButton.setVisible(false);
+            if (uploadPhotoButton != null) {
+                uploadPhotoButton.setVisible(false);
+            }
         } else {
-            uploadPhotoButton.setVisible(true);
+            if (uploadPhotoButton != null) {
+                uploadPhotoButton.setVisible(true);
+            }
         }
-        // Initially, no search is active.
-        createAlbumButton.setVisible(false);
+        // Hide the create-album-from-search button initially.
+        if (createAlbumButton != null) {
+            createAlbumButton.setVisible(false);
+        }
     }
-    
+
     private void updatePhotoDisplay() {
         photoTilePane.getChildren().clear();
         List<Photo> displayPhotos = (searchResults != null) ? searchResults : album.getPhotos();
@@ -82,7 +87,7 @@ public class PhotoViewController implements Initializable {
             addPhotoToTile(photo);
         }
     }
-    
+
     private void editPhoto(Photo photo) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/editPhotoDialog.fxml"));
@@ -130,8 +135,8 @@ public class PhotoViewController implements Initializable {
         if (result.isPresent()) {
             String chosenAlbumName = result.get();
             Album destAlbum = albums.stream()
-                                      .filter(a -> a.getName().equals(chosenAlbumName))
-                                      .findFirst().orElse(null);
+                    .filter(a -> a.getName().equals(chosenAlbumName))
+                    .findFirst().orElse(null);
             if (destAlbum != null) {
                 if (!destAlbum.getPhotos().contains(photo)) {
                     destAlbum.addPhoto(photo);
@@ -195,8 +200,8 @@ public class PhotoViewController implements Initializable {
         if (result.isPresent()) {
             String chosenAlbumName = result.get();
             Album destAlbum = albums.stream()
-                                      .filter(a -> a.getName().equals(chosenAlbumName))
-                                      .findFirst().orElse(null);
+                    .filter(a -> a.getName().equals(chosenAlbumName))
+                    .findFirst().orElse(null);
             if (destAlbum != null) {
                 album.getPhotos().remove(photo);
                 destAlbum.addPhoto(photo);
@@ -214,13 +219,14 @@ public class PhotoViewController implements Initializable {
     }
     
     private void addPhotoToTile(Photo photo) {
+        // Load the image using the helper method.
         Image image = new Image(getImageInputStream(photo.getPath()));
         ImageView photoIcon = new ImageView(image);
         photoIcon.setFitWidth(150);
         photoIcon.setFitHeight(150);
         photoIcon.setPreserveRatio(true);
         
-        // Create a small remove button with an icon.
+        // Create a remove button (only for non-"Stock Images" album).
         Button removeButton = new Button();
         removeButton.setStyle("-fx-background-color: transparent;");
         Image removeIcon = new Image(getClass().getResourceAsStream("/view/remove_icon.png"));
@@ -228,8 +234,7 @@ public class PhotoViewController implements Initializable {
         removeIconView.setFitWidth(25);
         removeIconView.setFitHeight(25);
         removeButton.setGraphic(removeIconView);
-        // Install a tooltip that displays "remove" on hover.
-        Tooltip.install(removeButton, new Tooltip("Remove"));
+        Tooltip.install(removeButton, new Tooltip("remove"));
         
         removeButton.setOnAction(e -> {
             album.getPhotos().remove(photo);
@@ -237,24 +242,23 @@ public class PhotoViewController implements Initializable {
             e.consume();
         });
         
-        // Create a StackPane to overlay the remove button on the image.
+        // Create a StackPane to overlay the remove button.
         StackPane imageContainer = new StackPane();
         imageContainer.getChildren().add(photoIcon);
-        // Only add the remove button if the album is not "Stock Images".
         if (!"Stock Images".equals(album.getName())) {
             imageContainer.getChildren().add(removeButton);
             StackPane.setAlignment(removeButton, Pos.TOP_RIGHT);
             StackPane.setMargin(removeButton, new Insets(5));
         }
         
-        // Set a click handler that opens the photo detail if not clicking on a button.
+        // Click handler to open the photo detail.
         imageContainer.setOnMouseClicked(event -> {
             if (!(event.getTarget() instanceof Button)) {
                 openPhoto(photo, event);
             }
         });
         
-        // Create extra buttons only if not in Stock Images.
+        // Create extra buttons (Edit, Copy, Move) if not in Stock Images.
         VBox container = new VBox();
         container.setAlignment(Pos.CENTER);
         container.setSpacing(5);
@@ -275,29 +279,6 @@ public class PhotoViewController implements Initializable {
             container.getChildren().addAll(imageContainer, nameLabel, captionLabel);
         }
         photoTilePane.getChildren().add(container);
-    }
-    
-    private FileInputStream getImageInputStream(String path) {
-        try {
-            if (path.startsWith("/")) {
-                URL resourceUrl = getClass().getResource(path);
-                if (resourceUrl != null) {
-                    return new FileInputStream(new File(resourceUrl.toURI()));
-                } else {
-                    throw new RuntimeException("Resource not found: " + path);
-                }
-            } else {
-                File file = new File(path);
-                if (file.exists()) {
-                    return new FileInputStream(file);
-                } else {
-                    throw new RuntimeException("File not found: " + path);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
     
     @FXML
@@ -382,23 +363,6 @@ public class PhotoViewController implements Initializable {
         stage.show();
     }
     
-    private void openPhoto(Photo photo, MouseEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/photoDetail.fxml"));
-            Parent detailRoot = loader.load();
-            PhotoDetailController detailController = loader.getController();
-            detailController.setPhoto(photo);
-            detailController.setImage(new Image(getImageInputStream(photo.getPath())));
-            Scene currentScene = photoTilePane.getScene();
-            detailController.setPreviousScene(currentScene);
-            Scene detailScene = new Scene(detailRoot, 900, 600);
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(detailScene);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-    
     // --- Search Functionality ---
     @FXML
     private void handleSearch(ActionEvent event) {
@@ -406,33 +370,53 @@ public class PhotoViewController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/searchDialog.fxml"));
             Parent root = loader.load();
             SearchDialogController controller = loader.getController();
-            
+
             Stage stage = new Stage();
             stage.setTitle("Search Photos");
             stage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
             stage.setScene(new Scene(root));
             stage.showAndWait();
-            
+
             Optional<SearchDialogController.SearchCriteria> optionalCriteria = controller.getCriteria();
             if (optionalCriteria.isPresent()) {
                 SearchDialogController.SearchCriteria criteria = optionalCriteria.get();
-                List<Photo> filtered = album.getPhotos();
-                if (criteria.startDate != null && criteria.endDate != null) {
-                    filtered = filtered.stream().filter(photo -> {
-                        LocalDate photoDate = photo.getDate().toInstant()
-                                .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
-                        return !photoDate.isBefore(criteria.startDate) && !photoDate.isAfter(criteria.endDate);
-                    }).collect(Collectors.toList());
+                
+                List<Photo> filtered = new ArrayList<>(album.getPhotos());
+                
+                // Only allow either date range OR tag search, not both.
+                if (criteria.startDate != null && criteria.endDate != null
+                        && criteria.tagType.isEmpty() && criteria.tagValue.isEmpty()) {
+                    filtered = filtered.stream()
+                            .filter(photo -> {
+                                LocalDate photoDate = photo.getDate().toInstant()
+                                        .atZone(java.time.ZoneId.systemDefault())
+                                        .toLocalDate();
+                                return !photoDate.isBefore(criteria.startDate)
+                                        && !photoDate.isAfter(criteria.endDate);
+                            })
+                            .collect(Collectors.toList());
+                } else if (!criteria.tagType.isEmpty() && !criteria.tagValue.isEmpty()
+                        && criteria.startDate == null && criteria.endDate == null) {
+                    filtered = filtered.stream()
+                            .filter(photo ->
+                                photo.getTags().stream()
+                                    .anyMatch(tag -> tag.equalsIgnoreCase(criteria.tagType + ":" + criteria.tagValue))
+                            )
+                            .collect(Collectors.toList());
+                } else {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Search Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Please enter either a date range OR a tag search, not both.");
+                    alert.showAndWait();
+                    return;
                 }
-                if (!criteria.tagType.isEmpty() && !criteria.tagValue.isEmpty()) {
-                    filtered = filtered.stream().filter(photo -> {
-                        return photo.getTags().stream()
-                                .anyMatch(tag -> tag.equalsIgnoreCase(criteria.tagType + ":" + criteria.tagValue));
-                    }).collect(Collectors.toList());
-                }
+                
+                // Update display with search results.
                 searchResults = filtered;
                 updatePhotoDisplay();
-                createAlbumButton.setVisible(true);
+                // Show "Create Album" button only if there are search results.
+                createAlbumButton.setVisible(!filtered.isEmpty());
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -448,14 +432,13 @@ public class PhotoViewController implements Initializable {
     
     @FXML
     private void handleCreateAlbum(ActionEvent event) {
-        // Open a TextInputDialog to get the new album name from the user.
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Create Album from Search Results");
         dialog.setHeaderText("Enter a name for the new album:");
         dialog.setContentText("Album name:");
         
-        // Set the graphic to display the icon
-        ImageView imageView = new ImageView(new Image("/view/folder_icon.png"));
+        // Set a graphic.
+        ImageView imageView = new ImageView(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
         imageView.setFitWidth(150);
         imageView.setFitHeight(150);
         imageView.setPreserveRatio(true);
@@ -477,25 +460,21 @@ public class PhotoViewController implements Initializable {
                 alert.showAndWait();
                 return;
             }
-            // Check if the current user already has an album with the given name.
             boolean exists = AlbumController.currentUser.getAlbums().stream()
                     .anyMatch(album -> album.getName().equalsIgnoreCase(newAlbumName));
             if (exists) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
-                alert.setContentText("An album with the name: " + newAlbumName + " already exists.");
+                alert.setContentText("An album with the name \"" + newAlbumName + "\" already exists.");
                 Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
                 alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
                 alert.showAndWait();
                 return;
             }
-            // Create the new album and fill it with the photos from the search.
-            // (Assuming searchResults is a List<Photo> field holding the filtered photos.)
             Album newAlbum = new Album(newAlbumName);
             newAlbum.getPhotos().addAll(searchResults);
             AlbumController.currentUser.getAlbums().add(newAlbum);
-            
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("Album Created");
             alert.setHeaderText(null);
@@ -503,12 +482,9 @@ public class PhotoViewController implements Initializable {
             Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
             alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/view/folder_icon.png")));
             alert.showAndWait();
-            
-            // Optionally refresh the album view if needed.
         }
     }
-
-   
+    
     @FXML
     private void handleManualSlideshow(ActionEvent event) {
         try {
@@ -527,7 +503,50 @@ public class PhotoViewController implements Initializable {
             ex.printStackTrace();
         }
     }
- // Helper method to get image URL.
+    
+    // Helper method to open a photo in detail.
+    private void openPhoto(Photo photo, MouseEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/photoDetail.fxml"));
+            Parent detailRoot = loader.load();
+            PhotoDetailController detailController = loader.getController();
+            detailController.setPhoto(photo);
+            detailController.setImage(new Image(getImageInputStream(photo.getPath())));
+            Scene currentScene = photoTilePane.getScene();
+            detailController.setPreviousScene(currentScene);
+            Scene detailScene = new Scene(detailRoot, 900, 600);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(detailScene);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    // Helper method to get an InputStream for an image given its path.
+    private FileInputStream getImageInputStream(String path) {
+        try {
+            if (path.startsWith("/")) {
+                URL resourceUrl = getClass().getResource(path);
+                if (resourceUrl != null) {
+                    return new FileInputStream(new File(resourceUrl.toURI()));
+                } else {
+                    throw new RuntimeException("Resource not found: " + path);
+                }
+            } else {
+                File file = new File(path);
+                if (file.exists()) {
+                    return new FileInputStream(file);
+                } else {
+                    throw new RuntimeException("File not found: " + path);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    // Helper method to get a URL string for an image.
     public static String getImageURL(String path) {
         if (path.startsWith("/")) {
             URL resourceUrl = PhotoViewController.class.getResource(path);
