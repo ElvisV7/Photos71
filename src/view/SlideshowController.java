@@ -9,6 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import model.Photo;
 import javafx.event.ActionEvent;
 
 public class SlideshowController implements Initializable {

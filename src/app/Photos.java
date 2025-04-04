@@ -9,11 +9,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import model.Admin;
+import model.Album;
+import model.Photo;
+import model.User;
 import util.PersistenceManager;
-import view.Admin;
-import view.Album;
-import view.Photo;
-import view.User;
 
 public class Photos extends Application {
     // Global admin instance (which owns the user list)

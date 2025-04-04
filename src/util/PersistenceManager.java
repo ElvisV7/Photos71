@@ -2,7 +2,8 @@ package util;
 
 import java.io.*;
 import java.util.ArrayList;
-import view.User;
+
+import model.User;
 
 public class PersistenceManager {
     private static final String USERS_DIR = System.getProperty("user.dir") + File.separator + "users";

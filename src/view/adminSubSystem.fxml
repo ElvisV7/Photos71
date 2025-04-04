@@ -11,7 +11,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" 
             xmlns="http://javafx.com/javafx/21.0.6"
-            fx:controller="view.AdminSubSystem">
+            fx:controller="view.AdminSubSystemController">
     <center>
         <VBox spacing="10">
             <Label text="Users:" styleClass="header"/>

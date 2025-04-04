@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
+import model.Photo;
 
 public class PhotoDetailController {
 

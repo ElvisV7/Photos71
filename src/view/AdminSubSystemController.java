@@ -17,8 +17,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import model.User;
 
-public class AdminSubSystem {
+public class AdminSubSystemController {
 
     @FXML
     private FlowPane userFlowPane;
