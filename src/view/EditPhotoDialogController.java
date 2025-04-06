@@ -12,54 +12,75 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Photo;
 
+/**
+ * Controller for the Edit Photo dialog.
+ * It allows the user to edit the caption and add tags (with three different tag types).
+ * Tags are stored in the format "type:value".
+ *
+ * @author Elvis Vasquez
+ */
 public class EditPhotoDialogController {
 
-    @FXML private TextField captionField;
-    @FXML private ComboBox<String> tagTypeCombo;
-    @FXML private VBox tagInputArea;
+    @FXML 
+    private TextField captionField;
     
-    // Store tags in the format "type:value"
+    @FXML 
+    private ComboBox<String> tagTypeCombo;
+    
+    @FXML 
+    private VBox tagInputArea;
+    
+    // List to store tags in the format "type:value"
     private final ArrayList<String> tags = new ArrayList<>();
     
-    // The photo being edited.
+    // The photo that is currently being edited.
     private Photo photo;
     
+    /**
+     * Sets the photo to be edited and pre-fills the caption.
+     * (If your Photo class later supports retrieving existing tags, you could load them into the tags list here.)
+     *
+     * @param photo the Photo object to edit
+     */
     public void setPhoto(Photo photo) {
         this.photo = photo;
         // Pre-fill caption with the photo's current caption.
         captionField.setText(photo.getCaption());
-        // (Optional: if Photo supports retrieving tags, load them into tags list.)
+        // (Optional: load photo's existing tags into the tags list, if needed.)
     }
     
     @FXML
     public void initialize() {
-        // Populate the combo box with default tag types.
+        // Populate the tag type combo box with default tag types.
         tagTypeCombo.setItems(FXCollections.observableArrayList("location", "people", "other"));
         tagTypeCombo.getSelectionModel().selectFirst();
         updateTagInputArea();
         
-        // When the selection changes, update the input area.
+        // Update the tag input area when the tag type selection changes.
         tagTypeCombo.setOnAction(e -> updateTagInputArea());
     }
     
-    // Update the tag input area based on the selected tag type.
+    /**
+     * Updates the tag input area (the VBox) based on the selected tag type.
+     * For "location": shows one text field.
+     * For "people": shows a text field with an "Add" button.
+     * For "other": shows two text fields for tag type and tag value.
+     */
     private void updateTagInputArea() {
         tagInputArea.getChildren().clear();
         String selected = tagTypeCombo.getSelectionModel().getSelectedItem();
         if ("location".equals(selected)) {
-            // For location, show one text field.
             TextField tf = new TextField();
             tf.setPromptText("Enter location");
             tagInputArea.getChildren().add(tf);
         } else if ("people".equals(selected)) {
-            // For people, show a text field and an "Add" button.
             TextField tf = new TextField();
             tf.setPromptText("Enter person's name");
             Button addButton = new Button("Add");
             addButton.setOnAction(e -> {
                 String person = tf.getText().trim();
                 if (!person.isEmpty()) {
-                    // Store each person as "person:name"
+                    // Save each person tag in the format "person:name"
                     tags.add("person:" + person);
                     tf.clear();
                 }
@@ -67,7 +88,6 @@ public class EditPhotoDialogController {
             HBox hbox = new HBox(5, tf, addButton);
             tagInputArea.getChildren().add(hbox);
         } else if ("other".equals(selected)) {
-            // For other, show two text fields: one for tag type and one for tag value.
             HBox hbox = new HBox(5);
             Label typeLabel = new Label("Tag Type:");
             TextField typeField = new TextField();
@@ -79,6 +99,9 @@ public class EditPhotoDialogController {
         }
     }
     
+    /**
+     * Handles adding a tag based on the currently selected tag type.
+     */
     @FXML
     private void handleAddTag() {
         String selected = tagTypeCombo.getSelectionModel().getSelectedItem();
@@ -90,8 +113,8 @@ public class EditPhotoDialogController {
                 tf.clear();
             }
         } else if ("people".equals(selected)) {
-            // For "people," the add button in the HBox already adds names.
-            // Optionally, you could display a summary alert here.
+            // For people, the add button in the HBox already adds names.
+            // Optionally, you could provide feedback or show a list of added names.
         } else if ("other".equals(selected)) {
             HBox hbox = (HBox) tagInputArea.getChildren().get(0);
             TextField typeField = (TextField) hbox.getChildren().get(1);
@@ -106,11 +129,13 @@ public class EditPhotoDialogController {
         }
     }
     
+    /**
+     * Finalizes the editing by updating the photo's caption and tags, then closes the dialog.
+     */
     @FXML
     private void handleDone() {
-        // Update the photo's caption.
         photo.setCaption(captionField.getText().trim());
-        // Update the photo's tags. (Assuming your Photo class has a setTags(List<String>) method.)
+        // Update the photo's tags.
         photo.setTags(tags);
         // Close the dialog window.
         Stage stage = (Stage) captionField.getScene().getWindow();

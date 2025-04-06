@@ -28,26 +28,33 @@ public class PhotoDetailController {
     
     private Scene previousScene;
     
-    // This method is called to set the photo and update the UI.
+    /**
+     * Sets the photo data and updates the UI.
+     * @param photo the Photo object whose details are to be shown
+     */
     public void setPhoto(Photo photo) {
         // Update caption
         captionLabel.setText("Caption: " + photo.getCaption());
+        
         // Format the date 
         DateFormat df = new SimpleDateFormat("MM-dd-yyyy HH:mm");
         dateLabel.setText("Date and time of capture: " + df.format(photo.getDate().getTime()));
         
         /* Use for tags:
-          for example:
-          ArrayList<Tags> tempTags = currentUser.getTags();
-          String tags = "";
-          for(int i = 0; i < tempTags.size(); ++i){
-          	tags += tempTags.get(i);
-          }
-          tagsLabel.setText("Tags: " + tags);
-          */
+        for example:
+        ArrayList<Tags> tempTags = currentUser.getTags();
+        String tags = "";
+        for(int i = 0; i < tempTags.size(); ++i){
+        	tags += tempTags.get(i);
+        }
+        tagsLabel.setText("Tags: " + tags);
+        */
     }
     
-    // Optionally, keep the setImage if you want to set a specific image separately.
+    /**
+     * Sets the image to be displayed.
+     * @param image the Image to display in the detail view
+     */
     public void setImage(Image image) {
         largeImage.setImage(image);
         largeImage.setFitWidth(900);
@@ -55,10 +62,18 @@ public class PhotoDetailController {
         largeImage.setPreserveRatio(true);
     }
     
+    /**
+     * Stores the previous scene so that the user can return to it.
+     * @param scene the previous Scene
+     */
     public void setPreviousScene(Scene scene) {
         this.previousScene = scene;
     }
     
+    /**
+     * Handles the Exit action, returning to the previous scene.
+     * @param event the action event triggered by clicking the Exit button
+     */
     @FXML
     private void handleExit(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

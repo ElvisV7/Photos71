@@ -22,6 +22,18 @@ public class Photos extends Application {
     // Base directory for user data
     public static String usersDir = System.getProperty("user.dir") + File.separator + "users";
     
+    /**
+     * Helper method to build a file URL for images in the external "data" folder.
+     * This method uses File.toURI() to ensure that the path is correctly escaped.
+     *
+     * @param filename the name of the file (e.g., "icon.png")
+     * @return a well-formed file URL (e.g., "file:///C:/.../data/icon.png")
+     */
+    public static String getDataFileURL(String filename) {
+        File file = new File(System.getProperty("user.dir") + File.separator + "data", filename);
+        return file.toURI().toString();
+    }
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         ArrayList<User> loadedUsers;
@@ -35,7 +47,7 @@ public class Photos extends Application {
             loadedUsers = new ArrayList<>();
         }
         
-        // Check if an admin and stock user already exists in loadedUsers.
+        // Check if an admin and stock user already exist in loadedUsers.
         boolean adminExists = loadedUsers.stream().anyMatch(u -> "admin".equals(u.getUsername()));
         boolean stockExists = loadedUsers.stream().anyMatch(u -> "stock".equals(u.getUsername()));
         if (!adminExists) {
@@ -51,17 +63,19 @@ public class Photos extends Application {
             admin.addUser(stock);
             Album album = new Album("stock");
             stock.getAlbums().add(album);
-            stock.getAlbums().get(stock.getAlbums().indexOf(album)).addPhoto(new Photo("/app/icon.png"));
-            stock.getAlbums().get(stock.getAlbums().indexOf(album)).addPhoto(new Photo("/view/admin_icon.png"));
-            stock.getAlbums().get(stock.getAlbums().indexOf(album)).addPhoto(new Photo("/view/background.jpeg"));
-            stock.getAlbums().get(stock.getAlbums().indexOf(album)).addPhoto(new Photo("/view/folder_icon.png"));
-            stock.getAlbums().get(stock.getAlbums().indexOf(album)).addPhoto(new Photo("/view/remove_icon.png"));
-            stock.getAlbums().get(stock.getAlbums().indexOf(album)).addPhoto(new Photo("/view/user_icon.png"));
-        } 
+            // Use our helper to get the file URLs for stock photos.
+            album.addPhoto(new Photo(getDataFileURL("icon.png")));
+            album.addPhoto(new Photo(getDataFileURL("admin_icon.png")));
+            album.addPhoto(new Photo(getDataFileURL("background.jpeg")));
+            album.addPhoto(new Photo(getDataFileURL("folder_icon.png")));
+            album.addPhoto(new Photo(getDataFileURL("remove_icon.png")));
+            album.addPhoto(new Photo(getDataFileURL("user_icon.png")));
+        }
         
         Parent root = FXMLLoader.load(getClass().getResource("/view/login.fxml"));
         primaryStage.setTitle("Photos");
-        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/app/icon.png")));
+        // Set the application icon using our helper.
+        primaryStage.getIcons().add(new Image(getDataFileURL("icon.png")));
         Scene scene = new Scene(root, 600, 400);
         scene.getStylesheets().add(getClass().getResource("/view/application.css").toExternalForm());
         primaryStage.setResizable(false);
@@ -77,7 +91,7 @@ public class Photos extends Application {
             }
         }));
     }
-
+    
     public static void main(String[] args) {
         launch(args);
     }
