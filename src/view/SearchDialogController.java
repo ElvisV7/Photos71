@@ -10,15 +10,7 @@ import javafx.stage.Stage;
 
 /**
  * Controller for the search dialog.
- * <p>
- * This dialog collects search criteria from the user. The criteria consist of a date range
- * (start and end dates) or a tag-based search (tag type and tag value). The criteria are
- * considered disjoint – the user should provide either a date range <em>or</em> tag criteria,
- * but not both. In this implementation, if both types of criteria are provided, the tag fields
- * are cleared (i.e. the date range takes precedence).
- * </p>
- * 
- * @author Elvis Vasquez 
+ * @author Elvis Vasquez & Tyler Gehringer
  */
 public class SearchDialogController {
 
@@ -27,9 +19,15 @@ public class SearchDialogController {
     @FXML 
     private DatePicker endDatePicker;
     @FXML 
-    private TextField tagTypeField;
+    private TextField tagTypeField1;
     @FXML 
-    private TextField tagValueField;
+    private TextField tagValueField1;
+    @FXML 
+    private TextField tagTypeField2;
+    @FXML 
+    private TextField tagValueField2;
+    @FXML 
+    private TextField operatorField;
     
     private SearchCriteria criteria;
     
@@ -39,8 +37,11 @@ public class SearchDialogController {
     public static class SearchCriteria {
         public LocalDate startDate;
         public LocalDate endDate;
-        public String tagType;
-        public String tagValue;
+        public String tagType1;
+        public String tagValue1;
+        public String tagType2;
+        public String tagValue2 ;
+        public String operator;
     }
     
     /**
@@ -59,14 +60,17 @@ public class SearchDialogController {
         // Retrieve values from UI controls.
         LocalDate start = startDatePicker.getValue();
         LocalDate end = endDatePicker.getValue();
-        String tagType = tagTypeField.getText().trim();
-        String tagValue = tagValueField.getText().trim();
+        String tagType1 = tagTypeField1.getText().trim();
+        String tagValue1 = tagValueField1.getText().trim();
+        String tagType2 = tagTypeField2.getText().trim();   // these controls you add
+        String tagValue2 = tagValueField2.getText().trim();
+        String operator = operatorField.getText().trim(); 
         
         // Validation: Allow either date range OR tag search but not both.
-        if ((start != null || end != null) && (!tagType.isEmpty() || !tagValue.isEmpty())) {
+        if (!tagType1.isEmpty() || !tagValue1.isEmpty()) {
             // Option 1: Clear tag fields so that only the date range remains.
-            tagType = "";
-            tagValue = "";
+            start = null;
+            end = null;
             // Option 2: Alternatively, you could show an error alert and not close the dialog.
             // For example:
             // showError("Please enter either a date range or tag search criteria, not both.");
@@ -77,8 +81,11 @@ public class SearchDialogController {
         criteria = new SearchCriteria();
         criteria.startDate = start;
         criteria.endDate = end;
-        criteria.tagType = tagType;
-        criteria.tagValue = tagValue;
+        criteria.tagType1 = tagType1;
+        criteria.tagValue1 = tagValue1;
+        criteria.tagType2 = tagType2;
+        criteria.tagValue2 = tagValue2;
+        criteria.operator = operator;
         
         // Close the dialog.
         Stage stage = (Stage) startDatePicker.getScene().getWindow();
