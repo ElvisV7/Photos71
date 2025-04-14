@@ -50,13 +50,20 @@ public class PhotoService {
     }
     
     /**
-     * Filters the given list of photos by a tag (in the format "tagType:tagValue").
+     * Filters the given list of photos by a tag.
+     * Checks each photo's Tag objects for a match.
+     *
+     * @param photos the list of photos.
+     * @param tagType the tag type.
+     * @param tagValue the tag value.
+     * @return a filtered list of photos.
      */
     public static List<Photo> filterByTag(List<Photo> photos, String tagType, String tagValue) {
-        String key = tagType + ":" + tagValue;
         return photos.stream()
                 .filter(photo -> photo.getTags().stream()
-                        .anyMatch(tag -> tag.equalsIgnoreCase(key)))
+                        .anyMatch(tag -> tag.getTagType().equalsIgnoreCase(tagType) &&
+                        		tag.getTagValue().equalsIgnoreCase(tagValue)
+                        		))
                 .collect(Collectors.toList());
     }
     
@@ -86,3 +93,4 @@ public class PhotoService {
         }
     }
 }
+  
