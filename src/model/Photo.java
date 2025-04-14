@@ -11,7 +11,7 @@ import java.util.Objects;
  * A photo is associated with a file path, a date taken (using the file's last modified date),
  * an optional caption, and a list of tags.
  * 
- * @author Elvis Vasquez
+ * @author Elvis Vasquez & Tyler Gehringer
  */
 public class Photo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -19,7 +19,7 @@ public class Photo implements Serializable {
     private String path;
     private Calendar date_taken;
     private String caption = ""; // Default caption is empty.
-    private ArrayList<String> tags;  // Stores tags in "type:value" format.
+    private ArrayList<Tag> tags;  // Stores tags in "type:value" format.
     
     /**
      * Constructs a Photo object given its file path.
@@ -66,15 +66,6 @@ public class Photo implements Serializable {
     }
     
     /**
-     * Returns the list of tags associated with the photo.
-     * 
-     * @return an ArrayList of tags.
-     */
-    public ArrayList<String> getTags(){
-        return this.tags;
-    }
-    
-    /**
      * Sets the photo's caption.
      * 
      * @param caption the new caption.
@@ -84,11 +75,70 @@ public class Photo implements Serializable {
     }
     
     /**
+     * Returns the list of tags associated with the photo.
+     * 
+     * @return an ArrayList of tags.
+     */
+    public ArrayList<Tag> getTags(){
+        return tags;
+    }
+    
+    public ArrayList<String> getTagsAsString(){
+        ArrayList<String> tagStrings = new ArrayList<>();
+        for (Tag tag : tags) {
+            tagStrings.add(tag.toString());
+        }
+        return tagStrings;
+    }
+    
+    /**
+     * Adds a tag to the photo using the provided TagTypeManager to enforce constraints.
+     * @param tag the Tag object to add.
+     * @param tagTypeManager the manager that enforces single or multi-value rules.
+     * @return true if added, false otherwise.
+     */
+    public boolean addTag(Tag tag, util.TagTypeManager tagTypeManager) {
+        if (tags.contains(tag)) {
+            System.out.println("Tag " + tag + " is already present.");
+            return false;
+        }
+        // Enforce single-value rule if applicable.
+        if (!tagTypeManager.isMultipleAllowed(tag.getTagType())) {
+            for (Tag t : tags) {
+                if (t.getTagType().equalsIgnoreCase(tag.getTagType())) {
+                    System.out.println("Only one tag allowed for '" + tag.getTagType() + "'.");
+                    return false;
+                }
+            }
+        }
+        tags.add(tag);
+        System.out.println("Tag " + tag + " added.");
+        return true;
+    }
+    
+    /**
+     * Removes a tag from the photo.
+     * @param tag the Tag object to remove.
+     * @return true if found and removed, false otherwise.
+     */
+    public boolean removeTag(Tag tag) {
+        if (tags.contains(tag)) {
+            tags.remove(tag);
+            System.out.println("Tag " + tag + " removed.");
+            return true;
+        } else {
+            System.out.println("Tag " + tag + " not found.");
+            return false;
+        }
+    }
+    
+    
+    /**
      * Sets the tags for the photo.
      * 
      * @param tags an ArrayList of tags to be assigned.
      */
-    public void setTags(ArrayList<String> tags) {
+    public void setTags(ArrayList<Tag> tags) {
         this.tags = tags;
     }
     
