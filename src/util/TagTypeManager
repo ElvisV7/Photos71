@@ -1,0 +1,63 @@
+package util;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+
+/**
+ * A utility class that allows users to add new tag types
+ * tag types check is case sensitive.
+ * @author Tyler Gehringer
+ */
+
+public class TagTypeManager implements Serializable{
+	private static final long serialVersionUID = 1L;
+	private Map<String, Boolean> allowedTagTypes;
+	
+	public TagTypeManager() {
+		allowedTagTypes = new HashMap<>();
+		
+		allowedTagTypes.put("location", false);
+		allowedTagTypes.put("person", true);
+	}
+	
+	
+	
+	public boolean isMultipleAllowed(String tagType) {
+		
+		return allowedTagTypes.getOrDefault(tagType.toLowerCase(), true);
+	}
+	
+	public void addTagType(String tagType, boolean isMultiAllowed) {
+		String key = tagType.toLowerCase();
+		if (allowedTagTypes.containsKey(key)) {
+			System.out.println("Tag type '" + tagType + "' already exists.");
+		}else {
+			allowedTagTypes.put(key, isMultiAllowed);
+			System.out.println("Tag type '" + tagType + "' added. Multiple allowed: " + isMultiAllowed);
+			persistTagTypes();
+		}
+	}
+	
+	public Map<String, Boolean> getAllowedTagTypes() {
+        return allowedTagTypes;
+	}
+	
+	private void persistTagTypes() {
+        TagTypeManagerPersist.persist(this);
+    }
+    
+
+    public static TagTypeManager loadTagTypes() {
+        TagTypeManager ttm = TagTypeManagerPersist.load();
+        if (ttm == null) { 
+            ttm = new TagTypeManager();
+        }
+        return ttm;
+    }
+	
+	
+	
+}
