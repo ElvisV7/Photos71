@@ -40,6 +40,7 @@
     <!-- Buttons to add tag (if needed) and finish editing -->
     <HBox spacing="10" alignment="CENTER">
          <Button text="Add Tag" onAction="#handleAddTag"/>
+         <Button fx:id="removeTagButton" text="Remove Tag" onAction="#handleRemoveTag"/>
          <Button text="Done" onAction="#handleDone"/>
     </HBox>
 </VBox>
