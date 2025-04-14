@@ -40,15 +40,11 @@ public class PhotoDetailController {
         DateFormat df = new SimpleDateFormat("MM-dd-yyyy HH:mm");
         dateLabel.setText("Date and time of capture: " + df.format(photo.getDate().getTime()));
         
-        /* Use for tags:
-        for example:
-        ArrayList<Tags> tempTags = currentUser.getTags();
-        String tags = "";
-        for(int i = 0; i < tempTags.size(); ++i){
-        	tags += tempTags.get(i);
+        StringBuilder tagsDisplay = new StringBuilder();
+        for (model.Tag tag : photo.getTags()) {
+            tagsDisplay.append(tag.toString()).append(" ");
         }
-        tagsLabel.setText("Tags: " + tags);
-        */
+        tagsLabel.setText("Tags: " + tagsDisplay.toString().trim());
     }
     
     /**
