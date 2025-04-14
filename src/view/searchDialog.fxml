@@ -19,12 +19,21 @@
     <Label text="End Date:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
     <DatePicker fx:id="endDatePicker" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
     
-    <Label text="Tag Type:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <TextField fx:id="tagTypeField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    <Label text="Tag Type 1:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <TextField fx:id="tagTypeField1" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
     
-    <Label text="Tag Value:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-    <TextField fx:id="tagValueField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+    <Label text="Tag Value 1:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <TextField fx:id="tagValueField1" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
     
-    <Button text="Search" onAction="#handleSearch" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-    <Button text="Cancel" onAction="#handleCancel" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+    <Label text="Tag Type 2:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+    <TextField fx:id="tagTypeField2" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+    
+    <Label text="Tag Value 2:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+    <TextField fx:id="tagValueField2" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    
+    <Label text="Operator:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+    <TextField fx:id="operatorField" promptText="AND or OR" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+    
+    <Button text="Search" onAction="#handleSearch" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+    <Button text="Cancel" onAction="#handleCancel" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
 </GridPane>
