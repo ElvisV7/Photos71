@@ -44,7 +44,8 @@ public class PersistenceManager {
      * @throws IOException if an I/O error occurs while reading the file
      * @throws ClassNotFoundException if the class of a serialized object cannot be found
      */
-    public static ArrayList<User> loadUsers() throws IOException, ClassNotFoundException {
+    @SuppressWarnings("unchecked")
+	public static ArrayList<User> loadUsers() throws IOException, ClassNotFoundException {
         File file = new File(USERS_FILE);
         if (!file.exists()) {
             return new ArrayList<>();

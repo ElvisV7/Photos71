@@ -62,7 +62,7 @@ public class SearchDialogController {
         LocalDate end = endDatePicker.getValue();
         String tagType1 = tagTypeField1.getText().trim();
         String tagValue1 = tagValueField1.getText().trim();
-        String tagType2 = tagTypeField2.getText().trim();   // these controls you add
+        String tagType2 = tagTypeField2.getText().trim();   
         String tagValue2 = tagValueField2.getText().trim();
         String operator = operatorField.getText().trim(); 
         

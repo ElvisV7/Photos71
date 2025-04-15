@@ -48,7 +48,7 @@ import model.PhotoService;
  * Controller for the photo viewing screen.
  * Manages photo display, editing, copying/moving, searching, and slideshow functionality.
  * 
- * @author Elvis Vasquez
+ * @author Elvis Vasquez & Tyler Gehringer
  */
 public class PhotoViewController implements Initializable {
 
@@ -440,9 +440,9 @@ public class PhotoViewController implements Initializable {
             if (optionalCriteria.isPresent()) {
                 SearchDialogController.SearchCriteria criteria = optionalCriteria.get();
                 List<Photo> filtered = new ArrayList<>(album.getPhotos());
-                // Allow either a date range search OR a tag search.
+                // CASE 1: Date Search (if both start and end dates are provided and tag fields are empty)
                 if (criteria.startDate != null && criteria.endDate != null
-                        && criteria.tagType.isEmpty() && criteria.tagValue.isEmpty()) {
+                    && criteria.tagType1.isEmpty() && criteria.tagValue1.isEmpty()) {
                     filtered = filtered.stream()
                             .filter(photo -> {
                                 LocalDate photoDate = photo.getDate().toInstant()
@@ -452,21 +452,64 @@ public class PhotoViewController implements Initializable {
                                         && !photoDate.isAfter(criteria.endDate);
                             })
                             .collect(Collectors.toList());
-                } else if (!criteria.tagType.isEmpty() && !criteria.tagValue.isEmpty()
-                        && criteria.startDate == null && criteria.endDate == null) {
-                    filtered = filtered.stream()
-                            .filter(photo ->
-                                photo.getTags().stream()
-                                    .anyMatch(tag -> tag.equalsIgnoreCase(criteria.tagType + ":" + criteria.tagValue))
-                            )
-                            .collect(Collectors.toList());
+                }
+                // CASE 2: Tag Search
+                else if (!criteria.tagType1.isEmpty() && !criteria.tagValue1.isEmpty()) {
+                    // If only one tag pair is provided, or the second pair/operator is incomplete:
+                    if (criteria.tagType2.isEmpty() || criteria.tagValue2.isEmpty() || criteria.operator.isEmpty()){
+                        filtered = filtered.stream()
+                                .filter(photo ->
+                                    photo.getTags().stream()
+                                        .anyMatch(tag ->
+                                            tag.getTagType().equalsIgnoreCase(criteria.tagType1) &&
+                                            tag.getTagValue().equalsIgnoreCase(criteria.tagValue1)
+                                        )
+                                )
+                                .collect(Collectors.toList());
+                    }
+                    // Otherwise, use two tag pairs with an operator.
+                    else {
+                        if (criteria.operator.equalsIgnoreCase("AND")) {
+                            filtered = filtered.stream()
+                                    .filter(photo ->
+                                        photo.getTags().stream().anyMatch(tag ->
+                                            tag.getTagType().equalsIgnoreCase(criteria.tagType1) &&
+                                            tag.getTagValue().equalsIgnoreCase(criteria.tagValue1)
+                                        )
+                                        &&
+                                        photo.getTags().stream().anyMatch(tag ->
+                                            tag.getTagType().equalsIgnoreCase(criteria.tagType2) &&
+                                            tag.getTagValue().equalsIgnoreCase(criteria.tagValue2)
+                                        )
+                                    )
+                                    .collect(Collectors.toList());
+                        } else if (criteria.operator.equalsIgnoreCase("OR")) {
+                            filtered = filtered.stream()
+                                    .filter(photo ->
+                                        photo.getTags().stream().anyMatch(tag ->
+                                            (tag.getTagType().equalsIgnoreCase(criteria.tagType1) &&
+                                             tag.getTagValue().equalsIgnoreCase(criteria.tagValue1))
+                                            ||
+                                            (tag.getTagType().equalsIgnoreCase(criteria.tagType2) &&
+                                             tag.getTagValue().equalsIgnoreCase(criteria.tagValue2))
+                                        )
+                                    )
+                                    .collect(Collectors.toList());
+                        } else {
+                            showError("Invalid operator. Use either 'AND' or 'OR'.");
+                            return;
+                        }
+                    }
                 } else {
-                    showError("Please enter either a date range OR a tag search, not both.");
+                    showError("Please enter either a complete date range or complete tag search criteria.");
                     return;
                 }
+                // Set the search results and update display.
                 searchResults = filtered;
                 updatePhotoDisplay();
                 createAlbumButton.setVisible(!filtered.isEmpty());
+            } else {
+                showError("Search cancelled.");
             }
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -7,10 +7,6 @@ import java.util.Objects;
 /**
  * Represents a user of the Photo application.
  * A user has a username and a list of albums.
- * 
- * <p>Note: You may choose to automatically add a default album (such as "Stock Images")
- * to each user in this constructor if desired.
- * </p>
  *
  * @author Elvis Vasquez
  */
@@ -21,10 +17,10 @@ public class User implements Serializable {
     private ArrayList<Album> albums;
     
     /**
-     * Constructs a new user with the given username.
+     * Creates a new user with the given username.
      * By default, the user has an empty list of albums.
      *
-     * @param username the username of the user
+     * @param username of the user
      */
     public User(String username) {
         this.username = username;

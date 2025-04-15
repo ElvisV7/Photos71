@@ -27,7 +27,7 @@ public class Photos extends Application {
      * This method uses File.toURI() to ensure that the path is correctly escaped.
      *
      * @param filename the name of the file (e.g., "icon.png")
-     * @return a well-formed file URL (e.g., "file:///C:/.../data/icon.png")
+     * @return a file URL (e.g., "file:///C:/.../data/icon.png")
      */
     public static String getDataFileURL(String filename) {
         File file = new File(System.getProperty("user.dir") + File.separator + "data", filename);

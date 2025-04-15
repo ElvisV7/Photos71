@@ -19,6 +19,8 @@ import app.Photos;
 /**
  * Controller for the login screen.
  * Handles user login, signup, and logout actions.
+ *  
+ * @author Elvis Vasquez
  */
 public class LoginController {
 

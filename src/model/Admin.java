@@ -3,14 +3,19 @@ package model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
-
+/**
+ * Represents the Administrator of the application. It contains the users list.
+ * There is only one instance of an Administrator.
+ * 
+ * @author Elvis Vasquez
+ */
 public class Admin extends User implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private static Admin instance;
     private static ArrayList<User> users; // centralized user list
 
-    // Private constructor: assign the shared users list and ensure admin is included.
+    // Private constructor: assign the shared users list and ensure admin is included
     private Admin(ArrayList<User> users) {
         super("admin");
         Admin.users = users;
@@ -19,24 +24,21 @@ public class Admin extends User implements Serializable {
         }
     }
     
-    // Factory method: if an Admin already exists in the list, return it; otherwise, create a new one.
+    // If an Admin already exists in the list, return it. Otherwise, create a new one
     public static Admin getInstance(ArrayList<User> userList) {
         // If an instance exists, return it.
         if (instance == null) {
             instance = new Admin(userList);
-        } else {
-            // Optionally update the shared list if needed.
-            // For now, we assume the shared list remains valid.
-        }
+        } 
         return instance;
     }
     
-    // Return the shared users list.
+    // Return the shared users list
     public ArrayList<User> listUsers() {
         return users;
     }
     
-    // Adds a new user (if not already present).
+    // Adds a new user 
     public void addUser(String username) {
         User newUser = new User(username);
         if (!users.contains(newUser)) {
@@ -50,7 +52,7 @@ public class Admin extends User implements Serializable {
         }
     }
     
-    // Deletes a user (except admin).
+    // Deletes a user (except admin)
     public void deleteUser(User user) {
         if (!"admin".equals(user.getUsername())) {
             users.remove(user);

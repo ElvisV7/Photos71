@@ -12,6 +12,12 @@ import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 import model.Photo;
 
+/*
+ * This class handles the detailed view window of photos
+ * 
+ * @author Elvis Vasquez
+ */
+
 public class PhotoDetailController {
 
     @FXML

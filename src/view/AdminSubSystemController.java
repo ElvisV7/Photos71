@@ -26,6 +26,8 @@ import model.User;
 /**
  * Controller for the admin subsystem.
  * Allows the admin to list, create, and delete users.
+ *  
+ * @author Elvis Vasquez
  */
 public class AdminSubSystemController {
 
