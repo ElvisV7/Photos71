@@ -40,14 +40,13 @@ Go to Window -> Preferences -> Java -> Build Path -> User Libraries
 19. Go to dependencies
 20. Check that JavaFX (your library) is in the Module Path Entries section. If not, add it there.
 21. To add any user library:
-Go to Advanced -> Add Library, then click "OK" -> User Library, then click "Next" -> Select JavaFX -> Finish
-_ Click Apply
+Go to Advanced -> Add Library, then click "OK" -> User Library, then click "Next" -> Select JavaFX -> Finish -> Click Apply
 22. On the very same window in step 18, go to Arguments:
 23. Add this on the VM arguments text box:
 --module-path "THIS IS WHERE YOU PUT THE PATH TO THE JAVA FX SDK FOLDER" --add-modules javafx.controls,javafx.graphics,javafx.fxml
-
 an example of the path:
 --module-path "C:\Users\gehri\Downloads\openjfx-21.0.6_windows-x64_bin-sdk" --add-modules javafx.controls,javafx.graphics,javafx.fxml
 24. Click Apply
 25. Click Run
+26. 
 Following this step by step will allow you to run our project as we have been doing for the duration of its creation. We used JDK21.06 which is a version of JDK21 as stipulated by the project requirements and Java FX SDK 21, also stipulated. Note that in order for the project to use these Java implements you must be running Eclipse IDE 2022-09 or an earlier version, all newer versions of eclipse would not allow us to use Java FX. We also made use of e(fx)clipse from the Eclipse marketplace. 
