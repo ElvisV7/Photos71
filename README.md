@@ -48,4 +48,5 @@ an example of the path:
 --module-path "C:\Users\gehri\Downloads\openjfx-21.0.6_windows-x64_bin-sdk" --add-modules javafx.controls,javafx.graphics,javafx.fxml
 24. Click Apply
 25. Click Run
+    
 Following this step by step will allow you to run our project as we have been doing for the duration of its creation. We used JDK21.06 which is a version of JDK21 as stipulated by the project requirements and Java FX SDK 21, also stipulated. Note that in order for the project to use these Java implements you must be running Eclipse IDE 2022-09 or an earlier version, all newer versions of eclipse would not allow us to use Java FX. We also made use of e(fx)clipse from the Eclipse marketplace. 
