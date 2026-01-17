@@ -43,7 +43,7 @@ Go to Advanced -> Add Library, then click "OK" -> User Library, then click "Next
 22. On the very same window in step 18, go to Arguments:
 23. Add this on the VM arguments text box:
 --module-path "THIS IS WHERE YOU PUT THE PATH TO THE JAVA FX SDK FOLDER" --add-modules javafx.controls,javafx.graphics,javafx.fxml
-an example of the path:
+An example of the path:
 --module-path "C:\Users\gehri\Downloads\openjfx-21.0.6_windows-x64_bin-sdk" --add-modules javafx.controls,javafx.graphics,javafx.fxml
 24. Click Apply
 25. Click Run
