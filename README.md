@@ -24,6 +24,7 @@ Method of Installation for project:
 4. Install JDK21
 5. In Eclipse marketplace, install e(fx)clipse
 6. Once everything is installed, create the JavaFX library as a user library. To do this: Go to Window -> Preferences -> Java -> Build Path -> User Libraries
+
 7.Click on New
 8.Name it JavaFX
 9. Once you add it, click on it, then click on Add External JARs. Then, look for the folder where you have the Java FX installed, go to the "lib" folder and select everything in there.
